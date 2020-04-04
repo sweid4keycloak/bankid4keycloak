@@ -1,0 +1,11 @@
+{
+  "themes": [
+    {
+      "name": "bankid-theme",
+      "types": [
+        "admin",
+        "login"
+      ]
+    }
+  ]
+}
