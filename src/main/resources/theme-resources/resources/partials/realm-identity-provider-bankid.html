@@ -121,9 +121,9 @@
                 <kc-tooltip>{{:: 'bankid.api-url.tooltip' | translate}}</kc-tooltip>
             </div>
             <div class="form-group clearfix">
-                <label class="col-md-2 control-label" for="p12Path">{{:: 'bankid.p12-path' | translate}}</label>
+                <label class="col-md-2 control-label" for="p12Path"><span class="required">*</span> {{:: 'bankid.p12-path' | translate}}</label>
                 <div class="col-md-6">
-                    <input class="form-control" id="p12Path" type="text" ng-model="identityProvider.config.p12Path">
+                    <input class="form-control" id="p12Path" type="text" ng-model="identityProvider.config.p12Path" required>
                 </div>
                 <kc-tooltip>{{:: 'bankid.p12-path.tooltip' | translate}}</kc-tooltip>
             </div>
