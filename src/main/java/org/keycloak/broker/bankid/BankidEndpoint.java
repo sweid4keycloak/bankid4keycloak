@@ -66,13 +66,19 @@ public class BankidEndpoint {
 	@GET
 	@Path("/collect")
 	public Response login(@QueryParam("orderref") String orderref) {
-    	return null;
+		// TODO: Get info from BankId to know what we should return
+		
+    	return Response.ok(
+				"{ \"status\": \"pending\" }",
+				MediaType.APPLICATION_JSON_TYPE)
+				.build();
 	}
 	
 	@GET
 	@Path("/done")
-	public Response status(@QueryParam("state") String state,
+	public Response done(@QueryParam("state") String state,
 			@QueryParam("orderref") String orderref) {
+		// TODO: Get info from BankId
 		String nin = "1111";
 		BrokeredIdentityContext identity = new BrokeredIdentityContext(nin);
     	
