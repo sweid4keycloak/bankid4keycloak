@@ -3,7 +3,9 @@ package org.keycloak.broker.bankid;
 import java.io.IOException;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -29,28 +31,59 @@ public class BankidEndpoint {
 	}
 	
 
-    @GET
-    public Response redirectBinding(@QueryParam("deckId") String deckId,
-    		@QueryParam("state") String relayState)  {
-    	try {
-			JsonNode json = SimpleHttp.doGet(getConfig().getBaseServiceUrl()+"/"+deckId+"/draw/?count=1", provider.getSession())
-				.acceptJson()
-				.asJson();
-			JsonNode card = json.get("cards").get(0);
-	    	BrokeredIdentityContext identity = new BrokeredIdentityContext(card.get("code").asText());
-	    	identity.setIdpConfig(config);
-	    	identity.setIdp(provider);
-	    	identity.setCode(relayState);
-	    	identity.setUsername(card.get("code").asText());
-	    	identity.setFirstName(card.get("value").asText());
-	    	identity.setLastName(card.get("suit").asText());
+	@GET
+	@Path("/start")
+	public Response start(@QueryParam("state") String state) {
+//		 LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
+//		 return loginFormsProvider.createForm("start-bankid.html");
+		return Response.ok(
+				this.getClass().getClassLoader().getResourceAsStream("theme-resources/resources/start-bankid.html"),
+				MediaType.TEXT_HTML_TYPE)
+				.build();
+	}
+	
+	@GET
+	@Path("/logo")
+	public Response logo() {
+//		 LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
+//		 return loginFormsProvider.createForm("start-bankid.html");
+		return Response.ok(
+				this.getClass().getClassLoader().getResourceAsStream("theme-resources/resources/bankid_vector_rgb.svg"),
+				"image/svg+xml")
+				.build();
+	}
+	
+	@GET
+	@Path("/login")
+	public Response login(@QueryParam("nin") String nin,
+			@QueryParam("state") String state) {
+		return Response.ok(
+				this.getClass().getClassLoader().getResourceAsStream("theme-resources/resources/login-bankid.html"),
+				MediaType.TEXT_HTML_TYPE)
+				.build();
+	}
+	
+	@GET
+	@Path("/collect")
+	public Response login(@QueryParam("orderref") String orderref) {
+    	return null;
+	}
+	
+	@GET
+	@Path("/done")
+	public Response status(@QueryParam("state") String state,
+			@QueryParam("orderref") String orderref) {
+		String nin = "1111";
+		BrokeredIdentityContext identity = new BrokeredIdentityContext(nin);
+    	
+    	identity.setIdpConfig(config);
+    	identity.setIdp(provider);
+    	identity.setUsername(nin);
+    	identity.setFirstName("Joe");
+    	identity.setLastName("Doe");
+    	identity.setCode(state);
 
-	    	return callback.authenticated(identity);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return callback.error("500", "DOH!");
+    	return callback.authenticated(identity);
     }
 	
 	public BankidIdentityProviderConfig getConfig() {
