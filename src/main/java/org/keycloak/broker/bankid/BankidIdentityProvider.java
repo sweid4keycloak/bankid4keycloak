@@ -5,8 +5,11 @@ import java.net.URISyntaxException;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.http.client.HttpClient;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
+import org.keycloak.common.util.KeystoreUtil;
+import org.keycloak.connections.httpclient.HttpClientBuilder;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.KeycloakSession;
@@ -16,12 +19,11 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 
 	public BankidIdentityProvider(KeycloakSession session, BankidIdentityProviderConfig config) {
 		super(session, config);
-		// TODO Auto-generated constructor stub
 	}
 	
 	@Override
 	public Object callback(RealmModel realm, AuthenticationCallback callback, EventBuilder event) {
-		return new BankidEndpoint(realm, this, getConfig(), callback);
+		return new BankidEndpoint(this, getConfig(), callback);
 	}
 	
 	@Override
@@ -45,6 +47,14 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 	@Override
 	public Response retrieveToken(KeycloakSession session, FederatedIdentityModel identity) {
 		return Response.ok(identity.getToken()).build();
+	}
+	
+	public HttpClient buildBankidHttpClient() throws Exception {
+		
+		return (new HttpClientBuilder())
+				.keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
+				.trustStore(KeystoreUtil.loadKeyStore("", ""))
+				.build();
 	}
 
 }
