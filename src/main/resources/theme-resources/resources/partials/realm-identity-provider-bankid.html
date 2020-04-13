@@ -1,4 +1,4 @@
-<div class="col-sm-9 col-md-10 col-sm-push-3 col-md-push-2" data-ng-init="initSamlProvider()">
+<div class="col-sm-9 col-md-10 col-sm-push-3 col-md-push-2" >
     <ol class="breadcrumb">
         <li><a href="#/realms/{{realm.realm}}/identity-provider-settings">{{:: 'identity-providers' | translate}}</a></li>
         <li data-ng-show="!newIdentityProvider && identityProvider.displayName">{{identityProvider.displayName}}</li>
@@ -9,7 +9,6 @@
     <kc-tabs-identity-provider></kc-tabs-identity-provider>
 
     <form class="form-horizontal" name="realmForm" novalidate kc-read-only="!access.manageIdentityProviders">
-	<!--
         <fieldset>
             <div class="form-group clearfix">
                 <label class="col-md-2 control-label" for="redirectUri">{{:: 'redirect-uri' | translate}}</label>
@@ -19,7 +18,6 @@
                 <kc-tooltip>{{:: 'redirect-uri.tooltip' | translate}}</kc-tooltip>
             </div>
         </fieldset>
-	-->
         <fieldset>
             <div class="form-group clearfix">
                 <label class="col-md-2 control-label" for="identifier"><span class="required">*</span> {{:: 'alias' | translate}}</label>
@@ -114,19 +112,48 @@
             <legend uncollapsed><span class="text">{{:: 'bankid.config' | translate}}</span> <kc-tooltip>{{:: 'bankid.config.tooltip' | translate}}</kc-tooltip></legend>
 
             <div class="form-group clearfix">
-                <label class="col-md-2 control-label" for="bankIdApiUrl"><span class="required">*</span> {{:: 'bankid.api-url' | translate}}</label>
+                <label class="col-md-2 control-label" for="bankid_apiurl"><span class="required">*</span> {{:: 'bankid.bankid_apiurl' | translate}}</label>
                 <div class="col-md-6">
-                    <input class="form-control" id="bankIdApiUrl" type="text" ng-model="identityProvider.config.bankIdApiUrl" required>
+                    <input class="form-control" id="bankid_apiurl" type="text" ng-model="identityProvider.config.bankid_apiurl" required>
                 </div>
-                <kc-tooltip>{{:: 'bankid.api-url.tooltip' | translate}}</kc-tooltip>
+                <kc-tooltip>{{:: 'bankid.bankid_apiurl.tooltip' | translate}}</kc-tooltip>
             </div>
             <div class="form-group clearfix">
-                <label class="col-md-2 control-label" for="p12Path"><span class="required">*</span> {{:: 'bankid.p12-path' | translate}}</label>
+                <label class="col-md-2 control-label" for="bankid_keystore_file"><span class="required">*</span> {{:: 'bankid.bankid_keystore_file' | translate}}</label>
                 <div class="col-md-6">
-                    <input class="form-control" id="p12Path" type="text" ng-model="identityProvider.config.p12Path" required>
+                    <input class="form-control" id="bankid_keystore_file" type="text" ng-model="identityProvider.config.bankid_keystore_file" required>
                 </div>
-                <kc-tooltip>{{:: 'bankid.p12-path.tooltip' | translate}}</kc-tooltip>
+                <kc-tooltip>{{:: 'bankid.bankid_keystore_file.tooltip' | translate}}</kc-tooltip>
             </div>
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_keystore_password"><span class="required">*</span> {{:: 'bankid.bankid_keystore_password' | translate}}</label>
+                <div class="col-md-6">
+                    <input class="form-control" id="bankid_keystore_password" type="text" ng-model="identityProvider.config.bankid_keystore_password" required>
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_keystore_password.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_privatekey_password"><span class="required">*</span> {{:: 'bankid.bankid_privatekey_password_file' | translate}}</label>
+                <div class="col-md-6">
+                    <input class="form-control" id="bankid_privatekey_password" type="text" ng-model="identityProvider.config.bankid_privatekey_password" required>
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_privatekey_password.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_truststore_file"><span class="required">*</span> {{:: 'bankid.bankid_truststore_file' | translate}}</label>
+                <div class="col-md-6">
+                    <input class="form-control" id="bankid_truststore_file" type="text" ng-model="identityProvider.config.bankid_truststore_file" required>
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_truststore_file.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_truststore_password"><span class="required">*</span> {{:: 'bankid.bankid_truststore_password' | translate}}</label>
+                <div class="col-md-6">
+                    <input class="form-control" id="bankid_truststore_password" type="text" ng-model="identityProvider.config.bankid_truststore_password" required>
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_truststore_password.tooltip' | translate}}</kc-tooltip>
+            </div>
+            
          </fieldset>
 
 	<!-- STOP HERE -->

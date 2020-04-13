@@ -11,7 +11,7 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	 */
 	private static final long serialVersionUID = 3849007589404817838L;
 	
-	private static final String BANKID_HOST_PROPERTY_NAME = "bankid_hostname";
+	private static final String BANKID_APIURL_PROPERTY_NAME = "bankid_apiurl";
 	private static final String BANKID_KEYSTORE_FILE_PROPERTY_NAME = "bankid_keystore_file";
 	private static final String BANKID_KEYSTORE_PASSWORD_PROPERTY_NAME = "bankid_keystore_password";
 	private static final String BANKID_TRUSTSTORE_FILE_PROPERTY_NAME = "bankid_truststore_file";
@@ -26,8 +26,8 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 		super(model);
 	}
 
-	public String getHostName() {
-		return getConfig().get(BANKID_HOST_PROPERTY_NAME);
+	public String getApiUrl() {
+		return getConfig().get(BANKID_APIURL_PROPERTY_NAME);
 	}
 	public KeyStore getKeyStore() throws Exception {
 		return KeystoreUtil.loadKeyStore(

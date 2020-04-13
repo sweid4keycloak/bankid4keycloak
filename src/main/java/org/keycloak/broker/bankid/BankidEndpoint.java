@@ -63,7 +63,7 @@ public class BankidEndpoint {
 		try {
 			@SuppressWarnings("unchecked")
 			Map<String, String> responseData = SimpleHttp.doPost(
-					"https://" + getConfig().getHostName() + "/rp/v5/auth", 
+					getConfig().getApiUrl() + "/rp/v5/auth", 
 					provider.buildBankidHttpClient())
 				.json(requestData)
 				.asJson(Map.class);
@@ -89,7 +89,7 @@ public class BankidEndpoint {
 		requestData.put("orderRef", orderref);
 		try {
 			CollectResponse responseData = SimpleHttp.doPost(
-					"https://" + getConfig().getHostName() + "/rp/v5/collect", 
+					getConfig().getApiUrl() + "/rp/v5/collect", 
 					provider.buildBankidHttpClient())
 				.json(requestData)
 				.asJson(CollectResponse.class);
@@ -114,7 +114,7 @@ public class BankidEndpoint {
 		requestData.put("orderRef", orderref);
 		try {
 			CollectResponse responseData = SimpleHttp.doPost(
-					"https://" + getConfig().getHostName() + "/rp/v5/collect", 
+					getConfig().getApiUrl() + "/rp/v5/collect", 
 					provider.buildBankidHttpClient())
 				.json(requestData)
 				.asJson(CollectResponse.class);
