@@ -11,42 +11,42 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
+import org.keycloak.broker.bankid.client.BankidClientException;
+import org.keycloak.broker.bankid.client.SimpleBankidClient;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.broker.provider.util.SimpleHttp;
+import org.keycloak.forms.login.LoginFormsProvider;
 
 public class BankidEndpoint {
 
 	private BankidIdentityProviderConfig config;
 	private AuthenticationCallback callback;
 	private BankidIdentityProvider provider;
+	private SimpleBankidClient bankidClient;
 	
 	public BankidEndpoint(BankidIdentityProvider provider,
 			BankidIdentityProviderConfig config, AuthenticationCallback callback) {
 	    this.config = config;
         this.callback = callback;
         this.provider = provider;
+        this.bankidClient = new SimpleBankidClient(provider.buildBankidHttpClient(), config.getApiUrl());
+        
 	}
 	
 
 	@GET
 	@Path("/start")
 	public Response start(@QueryParam("state") String state) {
-		return Response.ok(
-				this.getClass().getClassLoader().getResourceAsStream("theme-resources/resources/start-bankid.html"),
-				MediaType.TEXT_HTML_TYPE)
-				.build();
-	}
-	
-	@GET
-	@Path("/logo")
-	public Response logo() {
-		return Response.ok(
-				this.getClass().getClassLoader().getResourceAsStream("theme-resources/resources/bankid_vector_rgb.svg"),
-				"image/svg+xml")
-				.build();
+		LoginFormsProvider loginFormsProvider 
+			= provider.getSession().getProvider(LoginFormsProvider.class);
+		return loginFormsProvider
+				.setAttribute("state", state)
+				.createForm("start-bankid.ftl")
+				;
 	}
 	
 	@GET
@@ -54,29 +54,20 @@ public class BankidEndpoint {
 	public Response login(@QueryParam("nin") String nin,
 			@QueryParam("state") String state,
 			@Context HttpServletRequest request) {
-		
-		Map<String, String> requestData = new HashMap<>();
-		
-		requestData.put("personalNumber", nin);
-		requestData.put("endUserIp", request.getRemoteAddr());
-
+		LoginFormsProvider loginFormsProvider 
+			= provider.getSession().getProvider(LoginFormsProvider.class);
+	
 		try {
-			@SuppressWarnings("unchecked")
-			Map<String, String> responseData = SimpleHttp.doPost(
-					getConfig().getApiUrl() + "/rp/v5/auth", 
-					provider.buildBankidHttpClient())
-				.json(requestData)
-				.asJson(Map.class);
-			request.getSession().setAttribute("orderref", responseData.get("orderRef"));
-			
-			return Response.ok(
-					this.getClass().getClassLoader().getResourceAsStream("theme-resources/resources/login-bankid.html"),
-					MediaType.TEXT_HTML_TYPE)
-					.build();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to call BankID", e);
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to call BankID", e);
+			request.getSession().setAttribute("orderref", 
+					bankidClient.sendAuth(nin, request.getRemoteAddr()));
+				
+			return loginFormsProvider
+					.setAttribute("state", state)
+					.createForm("login-bankid.ftl");
+		} catch (BankidClientException e) {
+			return loginFormsProvider
+						.setError("bankid.error." + e.getHintCode())
+						.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
@@ -138,7 +129,16 @@ public class BankidEndpoint {
 			throw new RuntimeException("Failed to call BankID", e);
 		}
     }
-	
+
+	@GET
+	@Path("/cancel")
+	public Response canel(@QueryParam("state") String state,
+			@Context HttpServletRequest request) {
+		// String orderref = request.getSession().getAttribute("orderref").toString();
+		// TODO: Send cancel to bankid
+		return callback.cancelled(state);
+    }
+
 	public BankidIdentityProviderConfig getConfig() {
 		return config;
 	}

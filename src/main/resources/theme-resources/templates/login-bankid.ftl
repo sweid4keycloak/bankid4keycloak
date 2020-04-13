@@ -1,73 +1,11 @@
-<html>
-<head>
-<!-- 
-	TODO: This page should call the collect endpoint until we have status complete
-	Then we should redirect to the done endpoint
- -->
- <script>
- 
- function poll(fn, callback, errback, timeout, interval) {
-	    var endTime = Number(new Date()) + (timeout || 2000);
-	    interval = interval || 100;
-
-	    (function p() {
-	            // If the condition is met, we're done! 
-	            if(fn()) {
-	                callback();
-	            }
-	            // If the condition isn't met but the timeout hasn't elapsed, go again
-	            else if (Number(new Date()) < endTime) {
-	                setTimeout(p, interval);
-	            }
-	            // Didn't match and too much time, reject!
-	            else {
-	                errback(new Error('timed out for ' + fn + ': ' + arguments));
-	            }
-	    })();
-}
-
- var queryString = function() {
-     var query_string = {};
-     var query = window.location.search.substring(1);
-     var vars = query.split("&");
-     for (var i=0;i<vars.length;i++) {
-         var pair = vars[i].split("=");
-         if (typeof query_string[pair[0]] === "undefined") {
-             query_string[pair[0]] = pair[1];
-         } else if (typeof query_string[pair[0]] === "string") {
-             var arr = [ query_string[pair[0]], pair[1] ];
-             query_string[pair[0]] = arr;
-         } else {
-             query_string[pair[0]].push(pair[1]);
-         }
-     } 
-     return query_string;
-}();
-
-function redirectToDone() {
-	window.location.href = "done?state=" + queryString.state + "&nin=" + queryString.nin;
-}
-
- </script>
-</head>
-<body>
-	<div id="root">
-		<div style="display: flex; flex-direction: column;">
-			<div
-				style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: row; flex: 1 1 0%; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; justify-content: center;">
-				<div
-					style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; background: white none repeat scroll 0% 0%; width: 640px; max-width: 100%; padding: 40px 90px; justify-content: space-between;">
-					<div
-						style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px;"></div>
-					<div
-						style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px;">
-						<div
-							style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px;">
+<#import "template.ftl" as layout>
+<@layout.registrationLayout displayInfo=false displayWide=false; section>
+<#if section = "form">
+    <script src="${url.resourcesPath}/js/bankid.js" type="text/javascript"></script>
+					<div style="box-sizing: border-box; display: flex; align-items: center; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px;">
 							<div
 								style="box-sizing: border-box; display: flex; align-items: center; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; justify-content: center;">
-								<img alt=""
-									src="logo"
-									style="margin-bottom: 30px;">
+								<img alt="" src="${url.resourcesPath}/img/bankid_vector_rgb.svg" style="margin-bottom: 30px;">
 								<div
 									style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; margin-top: 20px; width: 100%;">
 									<h1
@@ -99,6 +37,7 @@ function redirectToDone() {
 									</div>
 								</div>
 							</div>
+							<form novalidate="" action="cancel">
 							<button
 								style="padding: 0px; margin: 0px; background-color: rgba(255, 255, 255, 0); border: medium none; cursor: pointer; outline: currentcolor none medium;">
 								<div
@@ -112,14 +51,9 @@ function redirectToDone() {
 									</div>
 								</div>
 							</button>
+							<input type="hidden"  name="state" id="form_state" value="${state}"/> 
+							</form>
 						</div>
-					</div>
-				</div>
-			</div>
-			<div
-				style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: fixed; z-index: 2147483647; min-height: 0px; min-width: 0px; bottom: 20px; right: 20px; max-width: 300px;"></div>
-		</div>
-	</div>
 <script>
 	var count = 10;
 	poll(
@@ -144,9 +78,8 @@ function redirectToDone() {
 	        
 	    },
 	    120000, // timeout
-	    500 // interval
+	    60000 // interval
 	);
 </script>
-</body>
-
-</html>
+</#if>
+</@layout.registrationLayout>

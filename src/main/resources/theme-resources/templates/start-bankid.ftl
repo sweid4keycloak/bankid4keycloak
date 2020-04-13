@@ -1,29 +1,6 @@
-<html>
-<header>
-
-<script type="text/javascript">
-function getQueryString() {
-       var query_string = {};
-       var query = window.location.search.substring(1);
-       var vars = query.split("&");
-       for (var i=0;i<vars.length;i++) {
-           var pair = vars[i].split("=");
-           if (typeof query_string[pair[0]] === "undefined") {
-               query_string[pair[0]] = pair[1];
-           } else if (typeof query_string[pair[0]] === "string") {
-               var arr = [ query_string[pair[0]], pair[1] ];
-               query_string[pair[0]] = arr;
-           } else {
-               query_string[pair[0]].push(pair[1]);
-           }
-       } 
-       return query_string;
-}
-var queryString = getQueryString();
-    </script>
-
-</header>
-<body>
+<#import "template.ftl" as layout>
+<@layout.registrationLayout displayInfo=false displayWide=false; section>
+<#if section = "form">
     <form novalidate="" style="margin-bottom: 20px; padding-bottom: 20px;" action="login">
         <div
             style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; border-radius: 0px; background: white none repeat scroll 0% 0%; border-color: transparent;">
@@ -45,9 +22,7 @@ var queryString = getQueryString();
                                     pattern="[0-9]*">
                             </div>
                         </div>
-                    </label></div><img alt=""
-                    src="logo"
-                    style="position: absolute; z-index: 100; right: 20px; top: 21.5px; width: 29px; height: 27px;">
+                    </label></div><img alt="" src="${url.resourcesPath}/img/bankid_vector_rgb.svg" style="position: absolute; z-index: 100; right: 20px; top: 21.5px; width: 29px; height: 27px;">
             </div>
         </div>
         <div
@@ -67,11 +42,7 @@ var queryString = getQueryString();
                             in</span></div>
                 </div>
             </button></div>
-            <input type="hidden"  name="state" id="form_state" /> 
+            <input type="hidden"  name="state" id="form_state" value="${state}"/> 
     </form>
-<script>
-document.getElementById('form_state').value = queryString.state;
-</script>
-</body>
-
-</html>
+</#if>
+</@layout.registrationLayout>

@@ -49,12 +49,16 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 		return Response.ok(identity.getToken()).build();
 	}
 	
-	public HttpClient buildBankidHttpClient() throws Exception {
+	public HttpClient buildBankidHttpClient() {
 		
-		return (new HttpClientBuilder())
-				.keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
-				.trustStore(getConfig().getTrustStore())
-				.build();
+		try {
+			return (new HttpClientBuilder())
+					.keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
+					.trustStore(getConfig().getTrustStore())
+					.build();
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to create BankID HTTP Client", e);
+		}
 	}
 
 }
