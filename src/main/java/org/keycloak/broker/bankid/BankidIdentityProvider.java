@@ -53,7 +53,7 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 		
 		return (new HttpClientBuilder())
 				.keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
-				.trustStore(KeystoreUtil.loadKeyStore("", ""))
+				.trustStore(getConfig().getTrustStore())
 				.build();
 	}
 
