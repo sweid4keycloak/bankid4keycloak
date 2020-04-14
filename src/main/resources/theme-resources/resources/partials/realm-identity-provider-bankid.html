@@ -128,14 +128,14 @@
             <div class="form-group clearfix">
                 <label class="col-md-2 control-label" for="bankid_keystore_password"><span class="required">*</span> {{:: 'bankid.bankid_keystore_password' | translate}}</label>
                 <div class="col-md-6">
-                    <input class="form-control" id="bankid_keystore_password" type="text" ng-model="identityProvider.config.bankid_keystore_password" required>
+                    <input class="form-control password-conceal" id="bankid_keystore_password" type="text" ng-model="identityProvider.config.bankid_keystore_password" required>
                 </div>
                 <kc-tooltip>{{:: 'bankid.bankid_keystore_password.tooltip' | translate}}</kc-tooltip>
             </div>
             <div class="form-group clearfix">
-                <label class="col-md-2 control-label" for="bankid_privatekey_password"><span class="required">*</span> {{:: 'bankid.bankid_privatekey_password_file' | translate}}</label>
+                <label class="col-md-2 control-label" for="bankid_privatekey_password"><span class="required">*</span> {{:: 'bankid.bankid_privatekey_password' | translate}}</label>
                 <div class="col-md-6">
-                    <input class="form-control" id="bankid_privatekey_password" type="text" ng-model="identityProvider.config.bankid_privatekey_password" required>
+                    <input class="form-control password-conceal" id="bankid_privatekey_password" type="text" ng-model="identityProvider.config.bankid_privatekey_password" required>
                 </div>
                 <kc-tooltip>{{:: 'bankid.bankid_privatekey_password.tooltip' | translate}}</kc-tooltip>
             </div>
@@ -149,7 +149,7 @@
             <div class="form-group clearfix">
                 <label class="col-md-2 control-label" for="bankid_truststore_password"><span class="required">*</span> {{:: 'bankid.bankid_truststore_password' | translate}}</label>
                 <div class="col-md-6">
-                    <input class="form-control" id="bankid_truststore_password" type="text" ng-model="identityProvider.config.bankid_truststore_password" required>
+                    <input class="form-control password-conceal" id="bankid_truststore_password" type="text" ng-model="identityProvider.config.bankid_truststore_password" required>
                 </div>
                 <kc-tooltip>{{:: 'bankid.bankid_truststore_password.tooltip' | translate}}</kc-tooltip>
             </div>
