@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.client.HttpClient;
+import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
+import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.provider.util.SimpleHttp.Response;
-import org.jboss.logging.Logger;
 
 public class SimpleBankidClient {
 	
@@ -41,6 +42,31 @@ public class SimpleBankidClient {
 		}
 	}
 	
+	public CollectResponse sendCollect(String orderrRef) {
+		Map<String, String> requestData = new HashMap<>();
+		requestData.put("orderRef", orderrRef);
+		try {
+			Response response = sendRequest("/rp/v5/collect", requestData);
+			CollectResponse responseData  = response.asJson(CollectResponse.class);
+			// TODO: Handle when status is failed
+			return responseData;
+		} catch (Exception e) {
+			logger.error("Failed to parse BankID response", e);
+			throw new BankidClientException(BankidHintCodes.internal, e);
+		}
+	}
+
+	public void sendCancel(String orderrRef) {
+		Map<String, String> requestData = new HashMap<>();
+		requestData.put("orderRef", orderrRef);
+		try {
+			sendRequest("/rp/v5/cancel", requestData);
+			return;
+		} catch (Exception e) {
+			logger.warn("Failed cancel BankID auth request " + orderrRef, e);
+		}
+	}
+
 	
 	
 	private Response sendRequest(String path, Object entity) {
@@ -60,7 +86,7 @@ public class SimpleBankidClient {
 			default:
 					return handleOtherHttpErrors(path, response);
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.error("Failed to send request to BankID", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);
 		}
@@ -95,5 +121,4 @@ public class SimpleBankidClient {
 		} catch (IOException e) { }
 		throw new  BankidClientException(BankidHintCodes.alreadyInProgress);
 	}
-
 }

@@ -21,7 +21,16 @@ function poll(fn, callback, errback, timeout, interval) {
 }
 
 function redirectToDone() {
-	window.location.href = "done?state=" + getParameterByName('state') + "&nin=" + getParameterByName('nin');
+	window.location.href = "done?state=" + getParameterByName('state');
+}
+
+
+function redirectToError(errorCode) {
+	window.location.href = "error?state=" +  getParameterByName('state') + "&code=" + errorCode;
+}
+
+function redirectToCancel(errorCode) {
+	window.location.href = "cancel?state=" +  getParameterByName('state');
 }
 
 function getParameterByName(name, url) {

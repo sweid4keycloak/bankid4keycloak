@@ -1,10 +1,5 @@
 package org.keycloak.broker.bankid;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Logger;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,15 +9,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
+import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
+import org.keycloak.broker.bankid.model.BankidUser;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
-import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.forms.login.LoginFormsProvider;
 
 public class BankidEndpoint {
@@ -31,7 +24,7 @@ public class BankidEndpoint {
 	private AuthenticationCallback callback;
 	private BankidIdentityProvider provider;
 	private SimpleBankidClient bankidClient;
-    private static final Logger log = Logger.getLogger(BankidEndpoint.class.getName());
+    private static final Logger logger = Logger.getLogger(BankidEndpoint.class);
 
 	
 	public BankidEndpoint(BankidIdentityProvider provider,
@@ -64,9 +57,11 @@ public class BankidEndpoint {
 			= provider.getSession().getProvider(LoginFormsProvider.class);
 	
 		try {
-			request.getSession().setAttribute("orderref", 
+			if ( request.getSession().getAttribute("orderref") == null ) {
+				request.getSession().setAttribute("orderref", 
 					bankidClient.sendAuth(nin, request.getRemoteAddr()));
-				
+			}
+			
 			return loginFormsProvider
 					.setAttribute("state", state)
 					.createForm("login-bankid.ftl");
@@ -82,63 +77,47 @@ public class BankidEndpoint {
 	public Response login(@Context HttpServletRequest request) {
 
 		String orderref = request.getSession().getAttribute("orderref").toString();
-		Map<String, String> requestData = new HashMap<>();
-		requestData.put("orderRef", orderref);
-            log.warning(String.format("orderRef: %s", orderref));
-		try {
-			CollectResponse responseData = SimpleHttp.doPost(
-					getConfig().getApiUrl() + "/rp/v5/collect", 
-					provider.buildBankidHttpClient())
-				.json(requestData)
-				.asJson(CollectResponse.class);
-ObjectMapper mapper = new ObjectMapper();
-String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseData);
-            log.warning(String.format("responseData: %s", json));
-			return Response.ok(
-					String.format("{ \"status\": \"%s\" }", responseData.getStatus()),
-					MediaType.APPLICATION_JSON_TYPE)
-					.build();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to call BankID", e);
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to call BankID", e);
+		CollectResponse responseData = bankidClient.sendCollect(orderref) ;
+		// TODO: Check responseData.getStatus()
+		if ( "complete".equalsIgnoreCase(responseData.getStatus()) ) {
+			request.getSession().removeAttribute("orderref");
+			request.getSession().setAttribute("bankidUser",responseData.getCompletionData().getUser());
 		}
+		return Response.ok(
+				String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
+						responseData.getStatus(), responseData.getHintCode()),
+				MediaType.APPLICATION_JSON_TYPE)
+				.build();
 	}
 	
 	@GET
 	@Path("/done")
-	public Response done(@QueryParam("nin") String nin,
-			@QueryParam("state") String state,
+	public Response done(@QueryParam("state") String state,
 			@Context HttpServletRequest request) {
-		String orderref = request.getSession().getAttribute("orderref").toString();
-            log.warning(String.format("orderRef: %s", orderref));
-		Map<String, String> requestData = new HashMap<>();
-		requestData.put("orderRef", orderref);
+		LoginFormsProvider loginFormsProvider 
+			= provider.getSession().getProvider(LoginFormsProvider.class);
+		// Make sure to remove the orderref attribute from the session
+		request.getSession().removeAttribute("orderref");
+		
+		if ( request.getSession().getAttribute("bankidUser") == null 
+				|| !(request.getSession().getAttribute("bankidUser") instanceof BankidUser) ) {
+			logger.error("Session attribute 'bankidUser' not set or not correct type.");
+			return loginFormsProvider
+					.setError("bankid.error.internal")
+					.createErrorPage(Status.INTERNAL_SERVER_ERROR);
+		}
+		BankidUser user = (BankidUser) request.getSession().getAttribute("bankidUser");
 		try {
-			CollectResponse responseData = SimpleHttp.doPost(
-					getConfig().getApiUrl() + "/rp/v5/collect", 
-					provider.buildBankidHttpClient())
-				.json(requestData)
-				.asJson(CollectResponse.class);
-			
-			// TODO: Check that status is "complete"
-			
-ObjectMapper mapper = new ObjectMapper();
-String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseData);
-            log.warning(String.format("responseData: %s", json));
-			BrokeredIdentityContext identity = new BrokeredIdentityContext(
-					responseData.getCompletionData().getUser().getPersonalNumber());
+			BrokeredIdentityContext identity = new BrokeredIdentityContext(user.getPersonalNumber());
 	    	
 	    	identity.setIdpConfig(config);
 	    	identity.setIdp(provider);
-	    	identity.setUsername(responseData.getCompletionData().getUser().getPersonalNumber());
-	    	identity.setFirstName(responseData.getCompletionData().getUser().getGivenName());
-	    	identity.setLastName(responseData.getCompletionData().getUser().getSurname());
+	    	identity.setUsername(user.getPersonalNumber());
+	    	identity.setFirstName(user.getGivenName());
+	    	identity.setLastName(user.getSurname());
 	    	identity.setCode(state);
 
 	    	return callback.authenticated(identity);
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to call BankID", e);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to call BankID", e);
 		}
@@ -148,9 +127,31 @@ String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(respons
 	@Path("/cancel")
 	public Response canel(@QueryParam("state") String state,
 			@Context HttpServletRequest request) {
-		// String orderref = request.getSession().getAttribute("orderref").toString();
-		// TODO: Send cancel to bankid
+		String orderRef = request.getSession().getAttribute("orderref").toString();
+		bankidClient.sendCancel(orderRef);
+		// Make sure to remove the orderref attribute from the session
+		request.getSession().removeAttribute("orderref");
 		return callback.cancelled(state);
+    }
+	
+	@GET
+	@Path("/error")
+	public Response error(@QueryParam("state") String state,
+			@QueryParam("code") String errorCode,
+			@Context HttpServletRequest request) {
+		try {
+			String orderRef = request.getSession().getAttribute("orderref").toString();
+			bankidClient.sendCancel(orderRef);
+			// Make sure to remove the orderref attribute from the session
+			request.getSession().removeAttribute("orderref");
+		} catch (Throwable e ) {
+			// Swallow any error since we are handling another error
+		}
+		LoginFormsProvider loginFormsProvider 
+			= provider.getSession().getProvider(LoginFormsProvider.class);
+		return loginFormsProvider
+				.setError("bankid.error." + errorCode)
+				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
     }
 
 	public BankidIdentityProviderConfig getConfig() {

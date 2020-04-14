@@ -58,24 +58,25 @@
 	var count = 10;
 	poll(
 	    function() {
-	    	const Http = new XMLHttpRequest();
+	    	const req = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
 	    	const url='collect';
-	    	Http.open("GET", url);
-	    	Http.send();
-	    	Http.onreadystatechange = function(){
-	    		if(this.readyState==4 && this.status==200 && JSON.parse(Http.responseText).status == 'complete') {
-	    			redirectToDone();	
-	    		}
-	    	}
+	    	req.open("GET", url, false);
+	    	req.send();
+	    	if(req.status==200 && JSON.parse(req.responseText).status == 'complete') {
+    			return true;	
+    		}
+    		else if( req.status!=200 ) {
+    			redirectToError(JSON.parse(req.responseText).hintCode);	
+    		}
 	        return false;
 	    },
 	    function() {
-	        // Done, success callback (this should not happen in our case :-))
-	    	
+	        // Done, success callback
+        	redirectToDone();
 	    },
 	    function() {
 	        // Error, failure callback
-	        
+	        redirectToError('timeout')    
 	    },
 	    120000, // timeout
 	    10000 // interval
