@@ -78,7 +78,7 @@
 	        
 	    },
 	    120000, // timeout
-	    60000 // interval
+	    10000 // interval
 	);
 </script>
 </#if>

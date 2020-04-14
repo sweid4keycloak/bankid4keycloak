@@ -3,6 +3,7 @@ package org.keycloak.broker.bankid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -12,6 +13,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
@@ -27,6 +31,8 @@ public class BankidEndpoint {
 	private AuthenticationCallback callback;
 	private BankidIdentityProvider provider;
 	private SimpleBankidClient bankidClient;
+    private static final Logger log = Logger.getLogger(BankidEndpoint.class.getName());
+
 	
 	public BankidEndpoint(BankidIdentityProvider provider,
 			BankidIdentityProviderConfig config, AuthenticationCallback callback) {
@@ -78,12 +84,16 @@ public class BankidEndpoint {
 		String orderref = request.getSession().getAttribute("orderref").toString();
 		Map<String, String> requestData = new HashMap<>();
 		requestData.put("orderRef", orderref);
+            log.warning(String.format("orderRef: %s", orderref));
 		try {
 			CollectResponse responseData = SimpleHttp.doPost(
 					getConfig().getApiUrl() + "/rp/v5/collect", 
 					provider.buildBankidHttpClient())
 				.json(requestData)
 				.asJson(CollectResponse.class);
+ObjectMapper mapper = new ObjectMapper();
+String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseData);
+            log.warning(String.format("responseData: %s", json));
 			return Response.ok(
 					String.format("{ \"status\": \"%s\" }", responseData.getStatus()),
 					MediaType.APPLICATION_JSON_TYPE)
@@ -101,6 +111,7 @@ public class BankidEndpoint {
 			@QueryParam("state") String state,
 			@Context HttpServletRequest request) {
 		String orderref = request.getSession().getAttribute("orderref").toString();
+            log.warning(String.format("orderRef: %s", orderref));
 		Map<String, String> requestData = new HashMap<>();
 		requestData.put("orderRef", orderref);
 		try {
@@ -112,6 +123,9 @@ public class BankidEndpoint {
 			
 			// TODO: Check that status is "complete"
 			
+ObjectMapper mapper = new ObjectMapper();
+String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(responseData);
+            log.warning(String.format("responseData: %s", json));
 			BrokeredIdentityContext identity = new BrokeredIdentityContext(
 					responseData.getCompletionData().getUser().getPersonalNumber());
 	    	
