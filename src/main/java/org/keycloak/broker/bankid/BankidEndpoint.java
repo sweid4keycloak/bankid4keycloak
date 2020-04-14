@@ -1,8 +1,10 @@
 package org.keycloak.broker.bankid;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.POST;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -48,10 +50,10 @@ public class BankidEndpoint {
 				;
 	}
 	
-	@GET
+	@POST
 	@Path("/login")
-	public Response login(@QueryParam("nin") String nin,
-			@QueryParam("state") String state,
+	public Response login(@FormParam("nin") String nin,
+			@FormParam("state") String state,
 			@Context HttpServletRequest request) {
 		LoginFormsProvider loginFormsProvider 
 			= provider.getSession().getProvider(LoginFormsProvider.class);
