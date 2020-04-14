@@ -131,7 +131,8 @@ public class BankidEndpoint {
 		bankidClient.sendCancel(orderRef);
 		// Make sure to remove the orderref attribute from the session
 		request.getSession().removeAttribute("orderref");
-		return callback.cancelled(state);
+		
+		return callback.error(state, "bankid.error.cancelled");
     }
 	
 	@GET

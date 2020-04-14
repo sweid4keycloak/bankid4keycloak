@@ -30,11 +30,11 @@ public class SimpleBankidClient {
 		requestData.put("personalNumber", personalNumber);
 		requestData.put("endUserIp", endUserIp);
 
+		Response response = sendRequest("/rp/v5/auth", requestData);
+
 		try {
-			Response response = sendRequest("/rp/v5/auth", requestData);
 			@SuppressWarnings("unchecked")
-			Map<String, String> responseData = response.asJson(Map.class);
-			
+			Map<String, String> responseData = response.asJson(Map.class);	
 			return responseData.get("orderRef");
 		} catch (Exception e) {
 			logger.error("Failed to parse BankID response", e);
