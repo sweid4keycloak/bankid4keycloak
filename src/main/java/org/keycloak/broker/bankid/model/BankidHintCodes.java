@@ -2,27 +2,33 @@ package org.keycloak.broker.bankid.model;
 
 public enum BankidHintCodes {
 	// Pending
-	outstandingTransaction,
-	noClient,
-	started,
-	userSign,
+	outstandingTransaction("RFA1"),
+	noClient("RFA1"),
+	started("RFA14B"),
+	userSign("RFA9"),
 	
 	// 400 Error codes 
-	alreadyInProgress,
-	invalidParameters,
+	alreadyInProgress("RFA4"),
+	invalidParameters("RFA22"),
 	
 	// 503 Error codes 
-	Maintenance,
+	Maintenance("RFA5"),
 	
 	// Errors
-	expiredTransaction,
-	certificateErr,
-	userCancel,
-	cancelled,
-	startFailed,
-	unkown,
+	internalError("RFA5"),
+	expiredTransaction("RFA8"),
+	certificateErr("RFA16"),
+	userCancel("RFA6"),
+	cancelled("RFA3"),
+	startFailed("RFA17A"),
+	unkown("RFA22"),
 	
 	// Internal error (by the BankID IDP Provider)
-	internal
+	internal("RFA22");
 
+	public final String messageShortName;
+	 
+    private BankidHintCodes(String messageShortName) {
+        this.messageShortName = messageShortName;
+    }
 }

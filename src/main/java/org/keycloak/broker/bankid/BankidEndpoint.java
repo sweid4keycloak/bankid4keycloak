@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
+import org.keycloak.broker.bankid.model.BankidHintCodes;
 import org.keycloak.broker.bankid.model.BankidUser;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
@@ -69,7 +70,7 @@ public class BankidEndpoint {
 					.createForm("login-bankid.ftl");
 		} catch (BankidClientException e) {
 			return loginFormsProvider
-						.setError("bankid.error." + e.getHintCode())
+						.setError("bankid.hints." + e.getHintCode().messageShortName)
 						.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -140,7 +141,7 @@ public class BankidEndpoint {
 	@GET
 	@Path("/error")
 	public Response error(@QueryParam("state") String state,
-			@QueryParam("code") String errorCode,
+			@QueryParam("code") String hintCode,
 			@Context HttpServletRequest request) {
 		try {
 			String orderRef = request.getSession().getAttribute("orderref").toString();
@@ -148,12 +149,19 @@ public class BankidEndpoint {
 			// Make sure to remove the orderref attribute from the session
 			request.getSession().removeAttribute("orderref");
 		} catch (Throwable e ) {
-			// Swallow any error since we are handling another error
+			// Swallow any error since we are handling another errors
+		}
+		BankidHintCodes hint;
+		// Sanitize input from the web
+		try {
+			hint = BankidHintCodes.valueOf(hintCode);
+		} catch (IllegalArgumentException e) {
+			hint = BankidHintCodes.unkown;
 		}
 		LoginFormsProvider loginFormsProvider 
 			= provider.getSession().getProvider(LoginFormsProvider.class);
 		return loginFormsProvider
-				.setError("bankid.error." + errorCode)
+				.setError("bankid.hints." + hint.messageShortName)
 				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
     }
 
