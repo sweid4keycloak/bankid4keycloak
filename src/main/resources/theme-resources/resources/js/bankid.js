@@ -62,7 +62,7 @@ function validateForm() {
 		success = false;
 	}
 	
-	if (!nin.value.charAt(0) === 1 || !nin.value.charAt(0)) {
+	if (nin.value.charAt(0) !='1' && nin.value.charAt(0) !='2') {
 		document.getElementById('error4').style.display="inline"; 
 		success = false;
 	}
