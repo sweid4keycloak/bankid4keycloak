@@ -1,7 +1,8 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=false displayWide=false; section>
 <#if section = "form">
-    <form novalidate="" style="margin-bottom: 20px; padding-bottom: 20px;" action="login" method="post">
+    <div id="error"><p style="color:red"></p></div> 
+    <form style="margin-bottom: 20px; padding-bottom: 20px;" action="login" method="post" id="login" onsubmit="return validateForm();">
         <div
             style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; border-radius: 0px; background: white none repeat scroll 0% 0%; border-color: transparent;">
             <div style="position: relative;">
@@ -18,8 +19,7 @@
                                         style="max-width: 100%; color: rgb(120, 117, 115); font-family: Helvetica, Arial, sans-serif; font-weight: 400; font-size: 14px; line-height: 30px; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; width: 100%; text-rendering: geometricprecision; -moz-text-size-adjust: none;">Personnummer</span>
                                 </div><input
                                     style="background-color: transparent; border: medium none; box-sizing: border-box; outline: currentcolor none medium; width: 100%; box-shadow: none; caret-color: rgb(72, 123, 148); color: rgb(23, 23, 23); -webkit-text-fill-color: rgb(23, 23, 23); opacity: 1; font-family: Helvetica, Arial, sans-serif; font-weight: 500; font-size: 23px; height: 70px; overflow: hidden; padding-left: 0px; padding-top: 15px; position: absolute; text-overflow: ellipsis; top: 0px; white-space: nowrap; text-rendering: geometricprecision; transform: translateY(0px);"
-                                    id="nin" name="nin" autocorrect="off" type="text" inputmode="numeric"
-                                    pattern="[0-9]*">
+                                    id="nin" name="nin" autocorrect="off" type="text" inputmode="numeric"/>
                             </div>
                         </div>
                     </label></div><img alt="" src="${url.resourcesPath}/img/bankid_vector_rgb.svg" style="position: absolute; z-index: 100; right: 20px; top: 21.5px; width: 29px; height: 27px;">
@@ -44,5 +44,6 @@
             </button></div>
             <input type="hidden"  name="state" id="form_state" value="${state}"/> 
     </form>
+    <script src="${url.resourcesPath}/js/bankid.js" type="text/javascript"></script>
 </#if>
 </@layout.registrationLayout>
