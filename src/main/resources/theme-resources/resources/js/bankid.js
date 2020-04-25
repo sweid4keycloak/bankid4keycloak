@@ -51,18 +51,18 @@ function validateForm() {
 		document.getElementById('error1').style.display="inline"; 
 		return false;
 	}
-		
-	if (nin.value === '') {
+	
+	if (!/^[0-9]+$/.test(nin.value)) {
 		document.getElementById('error2').style.display="inline"; 
 		success = false;
 	}
 	
-	if (nin.value.length < 10) {
+	if (nin.value.length != 12) {
 		document.getElementById('error3').style.display="inline"; 
 		success = false;
 	}
 	
-	if (nin.value.length > 13) {
+	if (!nin.value.charAt(0) === 1 || !nin.value.charAt(0)) {
 		document.getElementById('error4').style.display="inline"; 
 		success = false;
 	}
