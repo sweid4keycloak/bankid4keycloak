@@ -1,7 +1,7 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=false displayWide=false; section>
 <#if section = "form">
-    <div id="error"><p style="color:red"></p></div> 
+    <div id="error" style="padding-bottom: 20px; color:red;"></div> 
     <form style="margin-bottom: 20px; padding-bottom: 20px;" action="login" method="post" id="login" onsubmit="return validateForm();">
         <div
             style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; border-radius: 0px; background: white none repeat scroll 0% 0%; border-color: transparent;">
