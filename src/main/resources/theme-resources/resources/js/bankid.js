@@ -38,31 +38,33 @@ function getStateValue() {
 
 
 /* For login form */
-const errorElement = document.getElementById('error')
-const nin = document.getElementById('nin')
 
 function validateForm() {
-	let messages = [];
+	let success = true;
+	let nin = document.getElementById('nin');
+	document.getElementById('error1').style.display="none"; 
+	document.getElementById('error2').style.display="none"; 
+	document.getElementById('error3').style.display="none"; 
+	document.getElementById('error4').style.display="none"; 
+	
 	if (nin == null) {
-		messages.push('Something is really really wrong');
-		errorElement.innerText = messages.join(', ')
+		document.getElementById('error1').style.display="inline"; 
 		return false;
 	}
 		
 	if (nin.value === '') {
-		messages.push('You must type something');
+		document.getElementById('error2').style.display="inline"; 
+		success = false;
 	}
 	
 	if (nin.value.length < 10) {
-		messages.push('At least 10 characters');
+		document.getElementById('error3').style.display="inline"; 
+		success = false;
 	}
 	
 	if (nin.value.length > 13) {
-		messages.push('No more than 13 characters');
+		document.getElementById('error4').style.display="inline"; 
+		success = false;
 	}
-	
-	if (messages.length > 0) {
-		errorElement.innerText = messages.join('\n')
-		return false;
-	}
+	return success;
 }
