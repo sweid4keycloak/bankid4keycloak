@@ -1,5 +1,6 @@
 <#import "template.ftl" as layout>
 <@layout.registrationLayout displayInfo=false displayWide=false; section>
+
 <#if section = "form">
     <div id="error1" style="color:red; display:none;">${msg("bandkid.hint.LOCAL1")}</div> 
     <div id="error2" style="color:red; display:none;">${msg("bandkid.hint.LOCAL2")}</div> 
