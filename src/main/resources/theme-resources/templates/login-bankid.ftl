@@ -2,7 +2,7 @@
 <@layout.registrationLayout displayInfo=false displayWide=false; section>
 <#if section = "form">
 	<link href="${url.resourcesPath}/css/spin.css" rel="stylesheet" />
-	<script src="${url.resourcesPath}/js/spin.js" type="text/javascript"></script>
+	<script src="${url.resourcesPath}/js/spin.js" type="module"></script>
     <script src="${url.resourcesPath}/js/bankid.js" type="text/javascript"></script>
 					<div style="box-sizing: border-box; display: flex; align-items: center; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px;">
 							<div
