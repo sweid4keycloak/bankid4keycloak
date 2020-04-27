@@ -98,7 +98,7 @@
 	        redirectToError('timeout')    
 	    },
 	    120000, // timeout
-	    10000 // interval
+	    2000 // interval
 	);
 </script>
 </#if>
