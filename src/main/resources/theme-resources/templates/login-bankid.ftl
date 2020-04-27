@@ -2,8 +2,8 @@
 <@layout.registrationLayout displayInfo=false displayWide=false; section>
 <#if section = "form">
 	<link href="${url.resourcesPath}/css/spin.css" rel="stylesheet" />
-	<script src="${url.resourcesPath}/js/spin.js" type="module"></script>
-    <script src="${url.resourcesPath}/js/bankid.js" type="text/javascript"></script>
+	<script type="text/javascript" src="${url.resourcesPath}/js/spin.umd.js"></script>
+        <script src="${url.resourcesPath}/js/bankid.js" type="text/javascript"></script>
 					<div style="box-sizing: border-box; display: flex; align-items: center; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px;">
 							<div
 								style="box-sizing: border-box; display: flex; align-items: center; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; justify-content: center;">
@@ -27,15 +27,7 @@
 										style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">Confirming
 										your details</p>
 									<div style="flex: 1 1 0%; text-align: center;">
-										<svg height="6" width="30" viewBox="0 0 30 6"
-											id="progress-loader" color="rgba(23, 18, 15, 1)">
-											<g fill="rgba(23, 23, 23, 1)">
-											<circle cx="3" cy="3" id="1" opacity="0.1817118101115562"
-												r="3"></circle>
-											<circle cx="15" cy="3" id="2" opacity="0.744418429727186"
-												r="3"></circle>
-											<circle cx="27" cy="3" id="3" opacity="0.5747569475673416"
-												r="3"></circle></g></svg>
+										<div style="height: 300px;" id="progress-loader"></div>
 									</div>
 								</div>
 							</div>
@@ -58,8 +50,33 @@
 						</div>
 <script>
 	var count = 10;
+        var opts = {
+          lines: 16, // The number of lines to draw
+          length: 36, // The length of each line
+          width: 13, // The line thickness
+          radius: 45, // The radius of the inner circle
+          scale: 0.85, // Scales overall size of the spinner
+          corners: 1, // Corner roundness (0..1)
+          color: '#848080', // CSS color or array of colors
+          fadeColor: 'transparent', // CSS color or array of colors
+          speed: 0.5, // Rounds per second
+          rotate: 0, // The rotation offset
+          animation: 'spinner-line-shrink', // The CSS animation name for the lines
+          direction: 1, // 1: clockwise, -1: counterclockwise
+          zIndex: 2e9, // The z-index (defaults to 2000000000)
+          className: 'mySpinner', // The CSS class to assign to the spinner
+          top: '51%', // Top position relative to parent
+          left: '50%', // Left position relative to parent
+          shadow: '0 0 1px transparent', // Box-shadow for the lines
+          position: 'absolute' // Element positioning
+        };
+	    
+        var target = document.getElementById('progress-loader');
+        var spinner = new Spin.Spinner(opts).spin(target);
+	
 	poll(
 	    function() {
+	    
 	    	const req = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
 	    	const url='collect';
 	    	req.open("GET", url, false);
