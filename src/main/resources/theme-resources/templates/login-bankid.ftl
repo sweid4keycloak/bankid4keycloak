@@ -27,7 +27,7 @@
 										style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">Confirming
 										your details</p>
 									<div style="flex: 1 1 0%; text-align: center;">
-										<div style="height: 300px;" id="progress-loader"></div>
+										<div style="height: 250px;" id="progress-loader"></div>
 									</div>
 								</div>
 							</div>

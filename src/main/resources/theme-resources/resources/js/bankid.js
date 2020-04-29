@@ -38,33 +38,35 @@ function getStateValue() {
 
 
 /* For login form */
-
 function validateForm() {
 	let success = true;
 	let nin = document.getElementById('nin');
-	document.getElementById('error1').style.display="none"; 
-	document.getElementById('error2').style.display="none"; 
-	document.getElementById('error3').style.display="none"; 
-	document.getElementById('error4').style.display="none"; 
+	document.getElementById('error').style.display="none"; 
 	
 	if (nin == null) {
-		document.getElementById('error1').style.display="inline"; 
+		document.getElementById('error').style.display="inline"; 
 		return false;
 	}
 	
 	if (!/^[0-9]+$/.test(nin.value)) {
-		document.getElementById('error2').style.display="inline"; 
+		document.getElementById('error').style.display="inline"; 
 		success = false;
 	}
 	
 	if (nin.value.length != 12) {
-		document.getElementById('error3').style.display="inline"; 
+		document.getElementById('error').style.display="inline"; 
 		success = false;
 	}
 	
 	if (nin.value.charAt(0) !='1' && nin.value.charAt(0) !='2') {
-		document.getElementById('error4').style.display="inline"; 
+		document.getElementById('error').style.display="inline"; 
 		success = false;
 	}
 	return success;
+}
+
+function formChanged() {
+	if (nin.value.length > 6) {
+		return validateForm() ;
+	}
 }
