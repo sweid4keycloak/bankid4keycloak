@@ -11,6 +11,8 @@ import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.provider.util.SimpleHttp.Response;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class SimpleBankidClient {
 	
 	private static final Logger logger = Logger.getLogger(SimpleBankidClient.class);
@@ -114,11 +116,14 @@ public class SimpleBankidClient {
 
 	private Response handle400Response(String path, Response response) {
 		try {
+			JsonNode responseJson = response.asJson();
 			logger.errorf("Request to %s failed with status code %d and payload %s", 
 					path,
 					response.getStatus(),
-					response.asString());
-		} catch (IOException e) { }
-		throw new  BankidClientException(BankidHintCodes.alreadyInProgress);
+					responseJson.toString());
+			throw new  BankidClientException(BankidHintCodes.valueOf(responseJson.get("errorCode").textValue()));
+		} catch (IOException e) { 
+			throw new  BankidClientException(BankidHintCodes.internal);
+		}
 	}
 }

@@ -77,7 +77,7 @@ public class BankidEndpoint {
 	
 	@GET
 	@Path("/collect")
-	public Response login(@Context HttpServletRequest request) {
+	public Response collect(@Context HttpServletRequest request) {
 
 		String orderref = request.getSession().getAttribute("orderref").toString();
 		CollectResponse responseData = bankidClient.sendCollect(orderref) ;
