@@ -64,9 +64,3 @@ function validateForm() {
 	}
 	return success;
 }
-
-function formChanged() {
-	if (nin.value.length > 6) {
-		return validateForm() ;
-	}
-}

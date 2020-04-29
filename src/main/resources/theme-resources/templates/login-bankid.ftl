@@ -49,9 +49,9 @@
 	var count = 10;
         var opts = {
           lines: 16, // The number of lines to draw
-          length: 36, // The length of each line
+          length: 26, // The length of each line
           width: 13, // The line thickness
-          radius: 45, // The radius of the inner circle
+          radius: 35, // The radius of the inner circle
           scale: 0.85, // Scales overall size of the spinner
           corners: 1, // Corner roundness (0..1)
           color: '#848080', // CSS color or array of colors

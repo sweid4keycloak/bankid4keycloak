@@ -21,7 +21,7 @@
 									</span>
                                 </div><input
                                     style="background-color: transparent; border: medium none; box-sizing: border-box; outline: currentcolor none medium; width: 100%; box-shadow: none; caret-color: rgb(72, 123, 148); color: rgb(23, 23, 23); -webkit-text-fill-color: rgb(23, 23, 23); opacity: 1; font-family: Helvetica, Arial, sans-serif; font-weight: 500; font-size: 23px; height: 70px; overflow: hidden; padding-left: 0px; padding-top: 15px; position: absolute; text-overflow: ellipsis; top: 0px; white-space: nowrap; text-rendering: geometricprecision; transform: translateY(0px);"
-                                    id="nin" name="nin" autocorrect="off" autocomplete="off" type="text" inputmode="numeric" oninput="return formChanged()"/>
+                                    id="nin" name="nin" autocorrect="off" autocomplete="off" type="text" inputmode="numeric"/>
                             </div>
                         </div>
                     </label></div><img alt="" src="${url.resourcesPath}/img/bankid_vector_rgb.svg" style="position: absolute; z-index: 100; right: 20px; top: 21.5px; width: 29px; height: 27px;">
