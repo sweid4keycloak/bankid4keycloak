@@ -78,19 +78,26 @@ public class BankidEndpoint {
 	@GET
 	@Path("/collect")
 	public Response collect(@Context HttpServletRequest request) {
-
-		String orderref = request.getSession().getAttribute("orderref").toString();
-		CollectResponse responseData = bankidClient.sendCollect(orderref) ;
-		// TODO: Check responseData.getStatus()
-		if ( "complete".equalsIgnoreCase(responseData.getStatus()) ) {
-			request.getSession().removeAttribute("orderref");
-			request.getSession().setAttribute("bankidUser",responseData.getCompletionData().getUser());
+		if ( request.getSession().getAttribute("orderref") != null ) {
+			String orderref = request.getSession().getAttribute("orderref").toString();
+			CollectResponse responseData = bankidClient.sendCollect(orderref) ;
+			// TODO: Check responseData.getStatus()
+			if ( "complete".equalsIgnoreCase(responseData.getStatus()) ) {
+				request.getSession().removeAttribute("orderref");
+				request.getSession().setAttribute("bankidUser",responseData.getCompletionData().getUser());
+			}
+			return Response.ok(
+					String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
+							responseData.getStatus(), responseData.getHintCode()),
+					MediaType.APPLICATION_JSON_TYPE)
+					.build();
+		} else {
+			return Response.ok(
+					String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
+							"500", "internal"),
+					MediaType.APPLICATION_JSON_TYPE)
+					.build();
 		}
-		return Response.ok(
-				String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
-						responseData.getStatus(), responseData.getHintCode()),
-				MediaType.APPLICATION_JSON_TYPE)
-				.build();
 	}
 	
 	@GET
@@ -135,7 +142,7 @@ public class BankidEndpoint {
 		// Make sure to remove the orderref attribute from the session
 		request.getSession().removeAttribute("orderref");
 		
-		return callback.error(state, "bankid.error.cancelled");
+		return callback.error(state, "bankid.hints." +BankidHintCodes.cancelled.messageShortName);
     }
 	
 	@GET

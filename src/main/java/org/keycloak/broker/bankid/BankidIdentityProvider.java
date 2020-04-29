@@ -8,7 +8,6 @@ import javax.ws.rs.core.Response;
 import org.apache.http.client.HttpClient;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
-import org.keycloak.common.util.KeystoreUtil;
 import org.keycloak.connections.httpclient.HttpClientBuilder;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.FederatedIdentityModel;
