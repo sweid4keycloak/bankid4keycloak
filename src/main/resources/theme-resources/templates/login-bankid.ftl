@@ -11,23 +11,20 @@
 								<div
 									style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; margin-top: 20px; width: 100%;">
 									<h1
-										style="max-width: 100%; color: rgb(23, 23, 23); font-family: Helvetica , Arial, sans-serif; font-weight: 700; font-size: 36px; line-height: 40px; letter-spacing: -0.2px; text-align: center; text-rendering: geometricprecision; padding-top: 3px; padding-bottom: 2px; margin-bottom: 0px; margin-top: 0px; -moz-text-size-adjust: none;">Open
-										Mobile BankID, BankID on file or card</h1>
+										style="max-width: 100%; color: rgb(23, 23, 23); font-family: Helvetica , Arial, sans-serif; font-weight: 700; font-size: 36px; line-height: 40px; letter-spacing: -0.2px; text-align: center; text-rendering: geometricprecision; padding-top: 3px; padding-bottom: 2px; margin-bottom: 0px; margin-top: 0px; -moz-text-size-adjust: none;"> ${msg("bankid.login.text1")}</h1>
 								</div>
 								<div
 									style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; margin-bottom: 40px; width: 100%;">
 									<p
-										style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">To
-										login, start the BankID application on your mobile or
-										computer.</p>
+										style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">
+										${msg("bankid.login.text2")}</p>
 								</div>
 								<div
 									style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; margin-bottom: 40px; width: 100%;">
 									<p
-										style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">Confirming
-										your details</p>
+										style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">${msg("bankid.login.text3")}</p>
 									<div style="flex: 1 1 0%; text-align: center;">
-										<div style="height: 250px;" id="progress-loader"></div>
+										<div style="height: 200px;" id="progress-loader"></div>
 									</div>
 								</div>
 							</div>
@@ -41,7 +38,7 @@
 									<div
 										style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; padding-top: 0px; margin-top: -5px; margin-bottom: -6px;">
 										<span
-											style="max-width: 100%; color: rgb(23, 23, 23); font-family: Helvetica , Arial, sans-serif; font-weight: 500; font-size: 16px; opacity: 1; line-height: 20px; transition: color 0.2s ease 0s; visibility: visible; text-rendering: geometricprecision; -moz-text-size-adjust: none;">Cancel</span>
+											style="max-width: 100%; color: rgb(23, 23, 23); font-family: Helvetica , Arial, sans-serif; font-weight: 500; font-size: 16px; opacity: 1; line-height: 20px; transition: color 0.2s ease 0s; visibility: visible; text-rendering: geometricprecision; -moz-text-size-adjust: none;">${msg("bankid.login.cancel")}</span>
 									</div>
 								</div>
 							</button>
