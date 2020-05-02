@@ -5,6 +5,13 @@ To use this in produdction a valid subscibtion to BankID is required, for more i
 
 We do however provde a guide on howto set this up against BankID test environment, so you should be up and running in a jiffy. 
 
+## Legal Notice
+
+BankID is a registered trademark of Finansiell ID Teknik BID AB. We are not affiliated with, endorsed or sponsored by Finansiell ID Teknik BID AB.
+
+Keycloak is a registered  trademark of RedHat Inc. We are not affiliated with, endorsed or sponsored by RedHat Inc.
+
+
 ## Build and install
 
 Clone the reposotory, enter the target directory anf simply run
@@ -15,7 +22,7 @@ Command abouve will a jar-file in the target directory.
 
 Simple copy this jar file to the keycloak deployments directory. More on how to deploy components to keycloak please see.. --> PAGE
 
-cp target/keycloak-bankid-idp-1.0.0-SNAPSHOT.jar <KEYCLOAK_HOME>/standalone/deployments/
+cp target/bankid4keycloak-1.0.0-SNAPSHOT.jar <KEYCLOAK_HOME>/standalone/deployments/
 
 
 ## Client certificate and truststore
@@ -45,7 +52,7 @@ Under "Identity Providers" add the "BankID e-legitimation" identity provider.
 <picture>
 
 **BankID API base URL:**
-The URL for the BankID api. Please reffer to the "BankID Relying Party Guidelines v3.2.22" in case the URL has chnaged.
+The URL for the BankID api. Please reffer to the "BankID Relying Party Guidelines v3.2.22" in case the URL has changed.
 But at the time of writing they are
  - Prod --> https://appapi2.bankid.com/rp/v5
  - Test --> https://appapi2.test.bankid.com
