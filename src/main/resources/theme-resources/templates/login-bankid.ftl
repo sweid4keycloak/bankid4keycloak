@@ -41,8 +41,7 @@
 											style="max-width: 100%; color: rgb(23, 23, 23); font-family: Helvetica , Arial, sans-serif; font-weight: 500; font-size: 16px; opacity: 1; line-height: 20px; transition: color 0.2s ease 0s; visibility: visible; text-rendering: geometricprecision; -moz-text-size-adjust: none;">${msg("bankid.login.cancel")}</span>
 									</div>
 								</div>
-							</button>
-							<input type="hidden"  name="state" id="form_state" value="${state}"/> 
+							</button> 
 							</form>
 						</div>
 <script>

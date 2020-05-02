@@ -1,10 +1,11 @@
 package org.keycloak.broker.bankid;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -42,23 +43,32 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/start")
-	public Response start(@QueryParam("state") String state) {
+	public Response start(@QueryParam("state") String state,
+			@Context HttpServletRequest request) {
+		
+		state = getOrSetStringFromSession(request.getSession(), "bankid.state", state);
+		
+		if ( state == null ) {
+			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
+		}
 		LoginFormsProvider loginFormsProvider 
 			= provider.getSession().getProvider(LoginFormsProvider.class);
 		return loginFormsProvider
-				.setAttribute("state", state)
 				.createForm("start-bankid.ftl")
 				;
 	}
-	
+
 	@POST
 	@Path("/login")
 	public Response login(@FormParam("nin") String nin,
-			@FormParam("state") String state,
 			@Context HttpServletRequest request) {
 		LoginFormsProvider loginFormsProvider 
 			= provider.getSession().getProvider(LoginFormsProvider.class);
-	
+
+		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
+		if ( state == null ) {
+			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
+		}
 		try {
 			if ( request.getSession().getAttribute("orderref") == null ) {
 				request.getSession().setAttribute("orderref", 
@@ -81,7 +91,7 @@ public class BankidEndpoint {
 		if ( request.getSession().getAttribute("orderref") != null ) {
 			String orderref = request.getSession().getAttribute("orderref").toString();
 			CollectResponse responseData = bankidClient.sendCollect(orderref) ;
-			// TODO: Check responseData.getStatus()
+			// Check responseData.getStatus()
 			if ( "complete".equalsIgnoreCase(responseData.getStatus()) ) {
 				request.getSession().removeAttribute("orderref");
 				request.getSession().setAttribute("bankidUser",responseData.getCompletionData().getUser());
@@ -102,10 +112,17 @@ public class BankidEndpoint {
 	
 	@GET
 	@Path("/done")
-	public Response done(@QueryParam("state") String state,
-			@Context HttpServletRequest request) {
+	public Response done(@Context HttpServletRequest request) {
+
+		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
+		if ( state == null ) {
+			request.getSession().removeAttribute("orderref");
+			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
+		}
+		
 		LoginFormsProvider loginFormsProvider 
 			= provider.getSession().getProvider(LoginFormsProvider.class);
+		
 		// Make sure to remove the orderref attribute from the session
 		request.getSession().removeAttribute("orderref");
 		
@@ -120,7 +137,7 @@ public class BankidEndpoint {
 		try {
 			BrokeredIdentityContext identity = new BrokeredIdentityContext(user.getPersonalNumber());
 	    	
-	    	identity.setIdpConfig(config);
+			identity.setIdpConfig(config);
 	    	identity.setIdp(provider);
 	    	identity.setUsername(user.getPersonalNumber());
 	    	identity.setFirstName(user.getGivenName());
@@ -135,8 +152,13 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/cancel")
-	public Response canel(@QueryParam("state") String state,
-			@Context HttpServletRequest request) {
+	public Response canel(@Context HttpServletRequest request) {
+
+		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
+		if ( state == null ) {
+			request.getSession().removeAttribute("orderref");
+			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
+		}
 		String orderRef = request.getSession().getAttribute("orderref").toString();
 		bankidClient.sendCancel(orderRef);
 		// Make sure to remove the orderref attribute from the session
@@ -147,8 +169,7 @@ public class BankidEndpoint {
 	
 	@GET
 	@Path("/error")
-	public Response error(@QueryParam("state") String state,
-			@QueryParam("code") String hintCode,
+	public Response error(@QueryParam("code") String hintCode,
 			@Context HttpServletRequest request) {
 		try {
 			String orderRef = request.getSession().getAttribute("orderref").toString();
@@ -175,4 +196,13 @@ public class BankidEndpoint {
 	public BankidIdentityProviderConfig getConfig() {
 		return config;
 	}
+	
+	private String getOrSetStringFromSession(HttpSession session, String name, String defaultValue) {	
+		if ( session.getAttribute(name) == null) {
+			session.setAttribute(name, defaultValue);
+		}
+		Object value = session.getAttribute(name);
+		return (value==null?null:value.toString());
+	}
+
 }

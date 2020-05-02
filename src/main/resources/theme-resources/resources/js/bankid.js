@@ -21,21 +21,16 @@ function poll(fn, callback, errback, timeout, interval) {
 }
 
 function redirectToDone() {
-	window.location.href = "done?state=" + getStateValue();
+	window.location.href = "done";
 }
 
 function redirectToError(errorCode) {
-	window.location.href = "error?state=" +  getStateValue() + "&code=" + errorCode;
+	window.location.href = "error?code=" + errorCode;
 }
 
 function redirectToCancel(errorCode) {
-	window.location.href = "cancel?state=" +  getStateValue();
+	window.location.href = "cancel";
 }
-
-function getStateValue() {
-	 return document.getElementById("form_state").getAttribute("value");
-}
-
 
 /* For login form */
 function validateForm() {

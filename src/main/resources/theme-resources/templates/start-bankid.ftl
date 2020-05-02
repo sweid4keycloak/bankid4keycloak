@@ -44,8 +44,7 @@
 						</span>
 					</div>
                 </div>
-            </button></div>
-            <input type="hidden"  name="state" id="form_state" value="${state}"/> 
+            </button></div> 
     </form>
     <script src="${url.resourcesPath}/js/bankid.js" type="text/javascript"></script>
 </#if>
