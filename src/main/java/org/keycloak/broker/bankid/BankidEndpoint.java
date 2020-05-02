@@ -90,17 +90,35 @@ public class BankidEndpoint {
 	public Response collect(@Context HttpServletRequest request) {
 		if ( request.getSession().getAttribute("orderref") != null ) {
 			String orderref = request.getSession().getAttribute("orderref").toString();
-			CollectResponse responseData = bankidClient.sendCollect(orderref) ;
-			// Check responseData.getStatus()
-			if ( "complete".equalsIgnoreCase(responseData.getStatus()) ) {
-				request.getSession().removeAttribute("orderref");
-				request.getSession().setAttribute("bankidUser",responseData.getCompletionData().getUser());
+			try {
+				CollectResponse responseData = bankidClient.sendCollect(orderref) ;
+				// Check responseData.getStatus()
+				if ( "failed".equalsIgnoreCase(responseData.getStatus()) ) {
+					return Response.status(Status.INTERNAL_SERVER_ERROR)
+							.entity(
+									String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
+									responseData.getStatus(), responseData.getHintCode()))
+							.type(MediaType.APPLICATION_JSON_TYPE)
+							.build();
+				} else {
+					if ( "complete".equalsIgnoreCase(responseData.getStatus()) ) {
+						request.getSession().removeAttribute("orderref");
+						request.getSession().setAttribute("bankidUser",responseData.getCompletionData().getUser());
+					} 
+					return Response.ok(
+							String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
+									responseData.getStatus(), responseData.getHintCode()),
+							MediaType.APPLICATION_JSON_TYPE)
+							.build();
+				}
+			} catch (BankidClientException e) {
+				return Response.status(Status.INTERNAL_SERVER_ERROR)
+						.entity(
+								String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
+								"failed", e.getHintCode()))
+						.type(MediaType.APPLICATION_JSON_TYPE)
+						.build();
 			}
-			return Response.ok(
-					String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
-							responseData.getStatus(), responseData.getHintCode()),
-					MediaType.APPLICATION_JSON_TYPE)
-					.build();
 		} else {
 			return Response.ok(
 					String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", 
@@ -171,14 +189,9 @@ public class BankidEndpoint {
 	@Path("/error")
 	public Response error(@QueryParam("code") String hintCode,
 			@Context HttpServletRequest request) {
-		try {
-			String orderRef = request.getSession().getAttribute("orderref").toString();
-			bankidClient.sendCancel(orderRef);
-			// Make sure to remove the orderref attribute from the session
-			request.getSession().removeAttribute("orderref");
-		} catch (Throwable e ) {
-			// Swallow any error since we are handling another errors
-		}
+		// Make sure to remove the orderref attribute from the session
+		request.getSession().removeAttribute("orderref");
+
 		BankidHintCodes hint;
 		// Sanitize input from the web
 		try {

@@ -38,7 +38,7 @@ public class SimpleBankidClient {
 			@SuppressWarnings("unchecked")
 			Map<String, String> responseData = response.asJson(Map.class);	
 			return responseData.get("orderRef");
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.error("Failed to parse BankID response", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);
 		}
@@ -52,7 +52,7 @@ public class SimpleBankidClient {
 			CollectResponse responseData  = response.asJson(CollectResponse.class);
 			// TODO: Handle when status is failed
 			return responseData;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.error("Failed to parse BankID response", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);
 		}

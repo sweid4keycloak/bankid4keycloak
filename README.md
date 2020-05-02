@@ -31,12 +31,12 @@ In order to access the BankID API a client certificate, is required. Also trusts
 ### Client certificate
 The client certificate for the produdction environment is obtained once you've got a valid subscribtion.
 
-A certificate for BankID test environment however can be downloaded from the following [page])https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
+A certificate for BankID test environment however can be downloaded from the following [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
 
 The password for both pkcs12 container and the private key is: qwerty123
 
 ### Truststore
-A truststore is also reuqired. The CA Certificate is avalibe in the PDF "BankID Relying Party Guidelines v3.2.22" also found on the [page])https://www.bankid.com/bankid-i-dina-tjanster/rp-info) see page 13 for produdction environment and 14 for the test environment.
+A truststore is also reuqired. The CA Certificate is avalibe in the PDF "BankID Relying Party Guidelines v3.2.22" also found on the [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info) see page 13 for produdction environment and 14 for the test environment.
 
 *example on howto create a pkcs12 truststore from a pem formated file*
 `keytool -importcert -file apa.pem -alias "BankID Test CA" -trustcacerts -storetype pkcs12 -keystore truststore.p12`
