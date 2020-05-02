@@ -1,7 +1,7 @@
 # BankID Identity Provider for Keycloak
 
 BankID4Keycloak is a identity provider for the keycloak server, giving it superpowers by added support for the Swedish BankID.
-Please note,in order to use this in produdction a valid subscibtion to BankID is required, for more information see [this page])https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
+Please note,in order to use this in produdction a valid subscibtion to BankID is required, for more information see [this page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
 We do however provde a guide on howto set this up against BankID test environment, hence you should be up and running in a jiffy. 
 
 ## Legal Notice
