@@ -1,9 +1,8 @@
 # BankID Identity Provider for Keycloak
 
-BankID4Keycloak is a identity provider for keycloak, giving it superpowers by added support for the Swedish BankID.
-To use this in produdction a valid subscibtion to BankID is required, for more information see --> #PAGE
-
-We do however provde a guide on howto set this up against BankID test environment, so you should be up and running in a jiffy. 
+BankID4Keycloak is a identity provider for the keycloak server, giving it superpowers by added support for the Swedish BankID.
+Please note,in order to use this in produdction a valid subscibtion to BankID is required, for more information see [this page])https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
+We do however provde a guide on howto set this up against BankID test environment, hence you should be up and running in a jiffy. 
 
 ## Legal Notice
 
@@ -32,12 +31,12 @@ In order to access the BankID API a client certificate, is required. Also trusts
 ### Client certificate
 The client certificate for the produdction environment is obtained once you've got a valid subscribtion.
 
-A certificate for BankID test environment however can be downloaded from the following page https://www.bankid.com/bankid-i-dina-tjanster/rp-info
+A certificate for BankID test environment however can be downloaded from the following [page])https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
 
 The password for both pkcs12 container and the private key is: qwerty123
 
 ### Truststore
-A truststore is also reuqired. The CA Certificate is avalibe in the PDF "BankID Relying Party Guidelines v3.2.22" also found on the page https://www.bankid.com/bankid-i-dina-tjanster/rp-info se page 13 for produdction environment and 14 for the test environment.
+A truststore is also reuqired. The CA Certificate is avalibe in the PDF "BankID Relying Party Guidelines v3.2.22" also found on the [page])https://www.bankid.com/bankid-i-dina-tjanster/rp-info) see page 13 for produdction environment and 14 for the test environment.
 
 *example on howto create a pkcs12 truststore from a pem formated file*
 `keytool -importcert -file apa.pem -alias "BankID Test CA" -trustcacerts -storetype pkcs12 -keystore truststore.p12`
@@ -52,9 +51,9 @@ Under "Identity Providers" add the "BankID e-legitimation" identity provider.
 <picture>
 
 **BankID API base URL:**
-The URL for the BankID api. Please reffer to the "BankID Relying Party Guidelines v3.2.22" in case the URL has changed.
+The URL for the BankID api. Please reffer to the "" in case the URL has changed.
 But at the time of writing they are
- - Prod --> https://appapi2.bankid.com/rp/v5
+ - Prod --> https://appapi2.bankid.com
  - Test --> https://appapi2.test.bankid.com
  
 **Keystore file:**
@@ -68,7 +67,7 @@ Password for the pkcs12 container.
 `qwerty123`
 
 **Password for the private key:**
-The private key within the pkcs12 container is also encrypted.
+The private key within the pkcs12 container is also encrypted. [BankID Relying Party Guidelines v3.2.22](https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
 *example*
 `qwerty123`
 
@@ -85,3 +84,5 @@ Password for the pkcs12 container.
 
 ## Usage
 
+## Links
+[1]: [GitHub](http://github.com) "Title"
