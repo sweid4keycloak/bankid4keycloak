@@ -1,8 +1,7 @@
 # BankID Identity Provider for Keycloak
 
 BankID4Keycloak is a identity provider for the keycloak server, giving it superpowers by added support for the Swedish BankID.
-Please note,in order to use this in produdction a valid subscibtion to BankID is required, for more information see [this page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info).
-We do however provde a guide on howto set this up against BankID test environment, hence you should be up and running in a jiffy. 
+Please note, in order to use this in produdction a valid BankID subscibtion required, for more information see [this page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info).
 
 ## Legal Notice
 
@@ -13,19 +12,19 @@ Keycloak is a registered  trademark of RedHat Inc. We are not affiliated with, e
 
 ## Build and install
 
-Clone the reposotory, enter the target directory anf simply run
+Clone the reposotory, enter the target directory and simply run
 
 `mvn clean package`
 
-Command abouve will a jar-file in the target directory.
+Command above will a jar-file in the directory *target*.
 
-Simple copy this jar file to the keycloak deployments directory. More on how to deploy components to keycloak please see.. --> PAGE
+Simple copy this jar file to the keycloak deployments directory. More on howto deploy components to keycloak please see [https://www.keycloak.org/docs/latest/server_development](this page)
 
-cp target/bankid4keycloak-1.0.0-SNAPSHOT.jar <KEYCLOAK_HOME>/standalone/deployments/
+`cp target/bankid4keycloak-1.0.0-SNAPSHOT.jar <KEYCLOAK_HOME>/standalone/deployments/`
 
 
 ## Client certificate and truststore
-In order to access the BankID API a client certificate, is required. Also truststore, both in pkcs12 format.
+In order to access the BankID API a client certificate and a truststore is required, both in pkcs12 format.
 
 
 ### Client certificate
@@ -36,7 +35,7 @@ A certificate for BankID test environment however can be downloaded from the fol
 The password for both pkcs12 container and the private key is: qwerty123
 
 ### Truststore
-A truststore is also reuqired. The CA Certificate is avalibe in the PDF "BankID Relying Party Guidelines v3.2.22" also found on the [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info) see page 13 for produdction environment and 14 for the test environment.
+The CA Certificate is available in the PDF "BankID Relying Party Guidelines v3.2.22" also found on the [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info) see page 13 for produdction environment and 14 for the test environment.
 
 *example on howto create a pkcs12 truststore from a pem formated file*
 `keytool -importcert -file apa.pem -alias "BankID Test CA" -trustcacerts -storetype pkcs12 -keystore truststore.p12`
@@ -80,9 +79,3 @@ Full path to the truststore file
 Password for the pkcs12 container.
 *example*
 `qwerty123`
-
-
-## Usage
-
-## Links
-[1]: [GitHub](http://github.com) "Title"
