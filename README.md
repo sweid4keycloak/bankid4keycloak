@@ -18,7 +18,7 @@ Clone the repository, enter the target directory and run
 
 Running the command above will create a jar-file in the *target* directory.
 
-Copy the jar file to the Keycloak deployments directory. For further information on how to deploy components in Keycloak please see [https://www.keycloak.org/docs/latest/server_development](this page)
+Copy the jar file to the Keycloak deployments directory. For further information on how to deploy components in Keycloak please see [this page](https://www.keycloak.org/docs/latest/server_development).
 
 `cp target/bankid4keycloak-1.0.0-SNAPSHOT.jar <KEYCLOAK_HOME>/standalone/deployments/`
 
@@ -28,7 +28,7 @@ In order to access the BankID API a client certificate and a truststore is requi
 
 
 ### Client certificate
-To use BankID in production a valid contract is required, please contact one of the banks acting as resellers for [https://www.bankid.com/bankid-i-dina-tjanster](more information).
+To use BankID in production a valid contract is required, please contact one of the banks acting as resellers for [more information](https://www.bankid.com/bankid-i-dina-tjanster).
 
 A certificate for the BankID test environment can be downloaded using the following [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
 
