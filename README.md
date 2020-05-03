@@ -35,9 +35,9 @@ A certificate for the BankID test environment can be downloaded using the follow
 The password for the PKCS12 container and the private key is: qwerty123
 
 ### Truststore
-The CA Certificate is available in the PDF "BankID Relying Party Guidelines v3.2.22" and can also found on this [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info). See pages 13  and 14 of the PDF for production and test certificates.
+The CA Certificate is available in the PDF "BankID Relying Party Guidelines v3.2.22" and can also found on this [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info). See pages 13 and 14 of the PDF for production and test certificates.
 
-*example of how to create a PKCS12 truststore from a pem formated file*
+*example of how to create a PKCS12 truststore from a pem formated file*  
 `keytool -importcert -file apa.pem -alias "BankID Test CA" -trustcacerts -storetype pkcs12 -keystore truststore.p12`
 
 
@@ -50,32 +50,32 @@ Under the "Identity Providers" heading add the "BankID e-legitimation" identity 
 <picture>
 
 **BankID API base URL:**
-The URL for the BankID api. Please refer to the [BankID Relying Party Guidelines](https://www.bankid.com/bankid-i-dina-tjanster/rp-info) in case the URL has changed.
-At the time of writing they are
+The URL for the BankID api. Please refer to the [BankID Relying Party Guidelines](https://www.bankid.com/bankid-i-dina-tjanster/rp-info) in case the URL has changed. 
+At the time of writing they are 
  - Prod --> https://appapi2.bankid.com
  - Test --> https://appapi2.test.bankid.com
 
-**Keystore file:**
-Full path to the keystore file.
-*example*
+**Keystore file:**  
+Full path to the keystore file.  
+*example*  
 `/tls/keystore.p12`
 
-**Keystore password:**
-Password for the PKCS12 container.
-*example*
+**Keystore password:**  
+Password for the PKCS12 container.  
+*example*  
 `qwerty123`
 
-**Password for the private key:**
-The private key inside the PKCS12 container is also encrypted. [BankID Relying Party Guidelines v3.2.22](https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
-*example*
+**Password for the private key:**  
+The private key inside the PKCS12 container is also encrypted.  
+*example*  
 `qwerty123`
 
-**Truststore file:**
-Full path to the truststore file.
-*example*
+**Truststore file:**  
+Full path to the truststore file.  
+*example*  
 `/tls/truststore.p12`
 
-**Truststore password:**
-Password for the PKCS12 container.
-*example*
+**Truststore password:**  
+Password for the PKCS12 container.  
+*example*  
 `qwerty123`
