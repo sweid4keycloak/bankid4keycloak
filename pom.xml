@@ -17,6 +17,13 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
+    <distributionManagement>
+        <repository>
+         <id>github</id>
+         <name>GitHub bankid4keycloak Apache Maven Packages</name>
+         <url>https://maven.pkg.github.com/bankid4keycloak/bankid4keycloak</url>
+       </repository>
+    </distributionManagement>
     <dependencies>
         <dependency>
             <groupId>org.keycloak</groupId>
