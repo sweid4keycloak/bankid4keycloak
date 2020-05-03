@@ -50,7 +50,7 @@ Under the "Identity Providers" heading add the "BankID e-legitimation" identity 
 <picture>
 
 **BankID API base URL:**
-The URL for the BankID api. Please refer to the "" in case the URL has changed.
+The URL for the BankID api. Please refer to the [BankID Relying Party Guidelines](https://www.bankid.com/bankid-i-dina-tjanster/rp-info) in case the URL has changed.
 At the time of writing they are
  - Prod --> https://appapi2.bankid.com
  - Test --> https://appapi2.test.bankid.com
