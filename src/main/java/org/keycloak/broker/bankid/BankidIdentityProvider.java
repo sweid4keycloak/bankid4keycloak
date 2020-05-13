@@ -33,10 +33,8 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 							+ "/start?state="+ request.getState().getEncoded()))
 					.build();
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new IllegalArgumentException();
 		}
-		return null;
 	}
 	
 	public KeycloakSession getSession() {

@@ -17,6 +17,9 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	private static final String BANKID_TRUSTSTORE_FILE_PROPERTY_NAME = "bankid_truststore_file";
 	private static final String BANKID_TRUSTSTORE_PASSWORD_PROPERTY_NAME = "bankid_truststore_password";
 	private static final String BANKID_PRIVATEKEY_PASSWORD_PROPERTY_NAME = "bankid_privatekey_password";
+	private static final String BANKID_REQUIRE_NIN = "bankid_require_nin";
+	private static final String BANKID_SHOW_QR_CODE = "bankid_show_qr_code";
+	private static final String BANKID_SAVE_NIN_HASH = "bankid_save_nin_hash";
 	
 	private KeyStore keyStore;
 	private KeyStore truststore;
@@ -51,5 +54,17 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	
 	public String getPrivateKeyPassword() {
 		return getConfig().getOrDefault(BANKID_PRIVATEKEY_PASSWORD_PROPERTY_NAME, "changeit");
+	}
+	
+	public boolean isShowQRCode() {
+		return new Boolean(getConfig().getOrDefault(BANKID_SHOW_QR_CODE, "true"));
+	}
+	
+	public boolean isRequiredNin() {
+		return new Boolean(getConfig().getOrDefault(BANKID_REQUIRE_NIN, "true"));
+	}
+	
+	public boolean isSaveNinHashed() {
+		return new Boolean(getConfig().getOrDefault(BANKID_SAVE_NIN_HASH, "false"));
 	}
 }

@@ -1,5 +1,9 @@
 package org.keycloak.broker.bankid;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.FormParam;
@@ -15,6 +19,7 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
+import org.keycloak.broker.bankid.model.AuthResponse;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
 import org.keycloak.broker.bankid.model.BankidUser;
 import org.keycloak.broker.bankid.model.CollectResponse;
@@ -37,7 +42,6 @@ public class BankidEndpoint {
         this.callback = callback;
         this.provider = provider;
         this.bankidClient = new SimpleBankidClient(provider.buildBankidHttpClient(), config.getApiUrl());
-        
 	}
 	
 
@@ -51,11 +55,16 @@ public class BankidEndpoint {
 		if ( state == null ) {
 			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
 		}
-		LoginFormsProvider loginFormsProvider 
-			= provider.getSession().getProvider(LoginFormsProvider.class);
-		return loginFormsProvider
-				.createForm("start-bankid.ftl")
-				;
+		if ( config.isRequiredNin() ) {
+			LoginFormsProvider loginFormsProvider 
+				= provider.getSession().getProvider(LoginFormsProvider.class);
+			return loginFormsProvider
+					.createForm("start-bankid.ftl")
+					;
+		} else {
+			// Go direct to login if we do not require non.
+			return login(null, request);
+		}
 	}
 
 	@POST
@@ -67,16 +76,24 @@ public class BankidEndpoint {
 
 		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
 		if ( state == null ) {
-			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
+			return loginFormsProvider
+					.setError("bankid.hints." + BankidHintCodes.internal.messageShortName)
+					.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 		try {
-			if ( request.getSession().getAttribute("orderref") == null ) {
-				request.getSession().setAttribute("orderref", 
-					bankidClient.sendAuth(nin, request.getRemoteAddr()));
+			AuthResponse authResponse;
+			if ( request.getSession().getAttribute("authresponse") == null ) {
+				authResponse = bankidClient.sendAuth(nin, request.getRemoteAddr());
+				request.getSession().setAttribute("authresponse",authResponse);
+			} else {
+				authResponse = (AuthResponse)request.getSession().getAttribute("authresponse");
 			}
 			
 			return loginFormsProvider
 					.setAttribute("state", state)
+					.setAttribute("autoStartToken", authResponse.getAutoStartToken())
+					.setAttribute("showqr", config.isShowQRCode())
+					.setAttribute("currentUrl", request.getRequestURL())
 					.createForm("login-bankid.ftl");
 		} catch (BankidClientException e) {
 			return loginFormsProvider
@@ -88,8 +105,8 @@ public class BankidEndpoint {
 	@GET
 	@Path("/collect")
 	public Response collect(@Context HttpServletRequest request) {
-		if ( request.getSession().getAttribute("orderref") != null ) {
-			String orderref = request.getSession().getAttribute("orderref").toString();
+		if ( request.getSession().getAttribute("authresponse") != null ) {
+			String orderref = ((AuthResponse)request.getSession().getAttribute("authresponse")).getOrderRef();
 			try {
 				CollectResponse responseData = bankidClient.sendCollect(orderref) ;
 				// Check responseData.getStatus()
@@ -102,7 +119,7 @@ public class BankidEndpoint {
 							.build();
 				} else {
 					if ( "complete".equalsIgnoreCase(responseData.getStatus()) ) {
-						request.getSession().removeAttribute("orderref");
+						request.getSession().removeAttribute("authresponse");
 						request.getSession().setAttribute("bankidUser",responseData.getCompletionData().getUser());
 					} 
 					return Response.ok(
@@ -134,15 +151,15 @@ public class BankidEndpoint {
 
 		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
 		if ( state == null ) {
-			request.getSession().removeAttribute("orderref");
+			request.getSession().removeAttribute("authresponse");
 			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
 		}
 		
 		LoginFormsProvider loginFormsProvider 
 			= provider.getSession().getProvider(LoginFormsProvider.class);
 		
-		// Make sure to remove the orderref attribute from the session
-		request.getSession().removeAttribute("orderref");
+		// Make sure to remove the authresponse attribute from the session
+		request.getSession().removeAttribute("authresponse");
 		
 		if ( request.getSession().getAttribute("bankidUser") == null 
 				|| !(request.getSession().getAttribute("bankidUser") instanceof BankidUser) ) {
@@ -153,20 +170,31 @@ public class BankidEndpoint {
 		}
 		BankidUser user = (BankidUser) request.getSession().getAttribute("bankidUser");
 		try {
-			BrokeredIdentityContext identity = new BrokeredIdentityContext(user.getPersonalNumber());
+			BrokeredIdentityContext identity = new BrokeredIdentityContext(getUsername(user));
 	    	
 			identity.setIdpConfig(config);
 	    	identity.setIdp(provider);
-	    	identity.setUsername(user.getPersonalNumber());
+	    	identity.setUsername(getUsername(user));
 	    	identity.setFirstName(user.getGivenName());
 	    	identity.setLastName(user.getSurname());
 	    	identity.setCode(state);
 
 	    	return callback.authenticated(identity);
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to call BankID", e);
+			throw new RuntimeException("Failed to decode user information.", e);
 		}
     }
+
+	private String getUsername(BankidUser user) throws NoSuchAlgorithmException {
+		if ( this.config.isSaveNinHashed()) {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(user.getPersonalNumber().getBytes());
+            return Base64.getEncoder().encodeToString(md.digest());
+		} else {
+			return user.getPersonalNumber();
+		}
+	}
+
 
 	@GET
 	@Path("/cancel")
@@ -177,10 +205,10 @@ public class BankidEndpoint {
 			request.getSession().removeAttribute("orderref");
 			return callback.error(state, "bankid.hints." +BankidHintCodes.internal.messageShortName);
 		}
-		String orderRef = request.getSession().getAttribute("orderref").toString();
+		String orderRef = ((AuthResponse)request.getSession().getAttribute("authresponse")).getOrderRef();
 		bankidClient.sendCancel(orderRef);
-		// Make sure to remove the orderref attribute from the session
-		request.getSession().removeAttribute("orderref");
+		// Make sure to remove the authresponse attribute from the session
+		request.getSession().removeAttribute("authresponse");
 		
 		return callback.error(state, "bankid.hints." +BankidHintCodes.cancelled.messageShortName);
     }
@@ -189,8 +217,8 @@ public class BankidEndpoint {
 	@Path("/error")
 	public Response error(@QueryParam("code") String hintCode,
 			@Context HttpServletRequest request) {
-		// Make sure to remove the orderref attribute from the session
-		request.getSession().removeAttribute("orderref");
+		// Make sure to remove the authresponse attribute from the session
+		request.getSession().removeAttribute("authresponse");
 
 		BankidHintCodes hint;
 		// Sanitize input from the web

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.http.client.HttpClient;
 import org.jboss.logging.Logger;
+import org.keycloak.broker.bankid.model.AuthResponse;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.util.SimpleHttp;
@@ -25,19 +26,19 @@ public class SimpleBankidClient {
 		this.baseUrl = baseUrl;
 	}
 	
-	public String sendAuth(String personalNumber, String endUserIp) {
+	public AuthResponse sendAuth(String personalNumber, String endUserIp) {
 		
 		Map<String, String> requestData = new HashMap<>();
 		
-		requestData.put("personalNumber", personalNumber);
+		if ( personalNumber != null ) {
+			requestData.put("personalNumber", personalNumber);
+		}
 		requestData.put("endUserIp", endUserIp);
 
 		Response response = sendRequest("/rp/v5/auth", requestData);
 
 		try {
-			@SuppressWarnings("unchecked")
-			Map<String, String> responseData = response.asJson(Map.class);	
-			return responseData.get("orderRef");
+			return response.asJson(AuthResponse.class);
 		} catch (IOException e) {
 			logger.error("Failed to parse BankID response", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);

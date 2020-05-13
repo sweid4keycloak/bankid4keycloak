@@ -153,6 +153,27 @@
                 </div>
                 <kc-tooltip>{{:: 'bankid.bankid_truststore_password.tooltip' | translate}}</kc-tooltip>
             </div>
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_require_nin">{{:: 'bankid.bankid_require_nin' | translate}}</label>
+                <div class="col-md-6">
+                    <input ng-model="identityProvider.config.bankid_require_nin" name="identityProvider.config.bankid_require_nin" id="bankid_require_nin" onoffswitchvalue on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" />
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_require_nin.tooltip' | translate}}</kc-tooltip>
+            </div>
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_show_qr_code">{{:: 'bankid.bankid_show_qr_code' | translate}}</label>
+                <div class="col-md-6">
+                    <input ng-model="identityProvider.config.bankid_show_qr_code" name="identityProvider.config.bankid_show_qr_code" id="bankid_show_qr_code" onoffswitchvalue on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" />
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_show_qr_code.tooltip' | translate}}</kc-tooltip>
+            </div>            
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_save_nin_hash">{{:: 'bankid.bankid_save_nin_hash' | translate}}</label>
+                <div class="col-md-6">
+                    <input ng-model="identityProvider.config.bankid_save_nin_hash" name="identityProvider.config.bankid_save_nin_hash" id="bankid_save_nin_hash" data-ng-readonly="!newIdentityProvider" onoffswitchvalue on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" />
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_save_nin_hash.tooltip' | translate}}</kc-tooltip>
+            </div>
             
          </fieldset>
 
