@@ -63,13 +63,24 @@ public class BankidEndpoint {
 					;
 		} else {
 			// Go direct to login if we do not require non.
-			return login(null, request);
+			return doLogin(null, request);
 		}
 	}
 
 	@POST
 	@Path("/login")
-	public Response login(@FormParam("nin") String nin,
+	public Response loginPost(@FormParam("nin") String nin,
+			@Context HttpServletRequest request) {
+		return doLogin(nin, request);
+	}
+
+	@GET
+	@Path("/login")
+	public Response loginGet(@Context HttpServletRequest request) {
+		return doLogin(null, request);
+	}
+	
+	private Response doLogin(String nin,
 			@Context HttpServletRequest request) {
 		LoginFormsProvider loginFormsProvider 
 			= provider.getSession().getProvider(LoginFormsProvider.class);
