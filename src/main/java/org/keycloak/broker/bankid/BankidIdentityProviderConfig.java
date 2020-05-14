@@ -57,7 +57,7 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	}
 	
 	public boolean isShowQRCode() {
-		return new Boolean(getConfig().getOrDefault(BANKID_SHOW_QR_CODE, "true"));
+		return new Boolean(getConfig().getOrDefault(BANKID_SHOW_QR_CODE, "false"));
 	}
 	
 	public boolean isRequiredNin() {

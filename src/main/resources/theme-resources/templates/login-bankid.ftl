@@ -18,10 +18,15 @@
 					<p style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">
 						${msg("bankid.login.text2",autoStartToken, currentUrl)?no_esc}</p>
 				</div>
-				<div
-					style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; margin-bottom: 40px; width: 100%;">
-					<p
-						style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">${msg("bankid.login.text3")}</p>
+				<#if showqr == true>
+				<div id="qrcode" style="box-sizing: border-box; display: flex; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; margin-bottom: 40px; width: 100%;">
+					<div style="flex: 1 1 0%; text-align: center;">
+						<img src="qrcode"/>
+					</div>
+				</div>
+				</#if>
+				<div id="loading" style="box-sizing: border-box; display: none; align-items: stretch; flex-direction: column; flex-shrink: 0; border-style: solid; border-width: 0px; position: relative; z-index: 0; min-height: 0px; min-width: 0px; margin-bottom: 40px; width: 100%;">
+					<p style="max-width: 100%; color: rgb(23, 23, 23); font-size: 19px; font-family: Helvetica , Arial, sans-serif; font-weight: 400; line-height: 30px; text-align: center; margin-bottom: 0px; margin-top: 0px; padding-bottom: 1px; padding-top: 4px; text-rendering: geometricprecision; -moz-text-size-adjust: none;">${msg("bankid.login.text3")}</p>
 					<div style="flex: 1 1 0%; text-align: center;">
 						<div style="height: 200px;" id="progress-loader"></div>
 					</div>
@@ -65,9 +70,6 @@
       shadow: '0 0 1px transparent', // Box-shadow for the lines
       position: 'absolute' // Element positioning
     };
-	    
-    var target = document.getElementById('progress-loader');
-    var spinner = new Spin.Spinner(opts).spin(target);
 
 	poll(
 	    function() {
@@ -76,8 +78,24 @@
 	    	const url='collect';
 	    	req.open("GET", url, false);
 	    	req.send();
-	    	if(req.status==200 && JSON.parse(req.responseText).status == 'complete') {
-    			return true;	
+	    	
+	    	if(req.status==200) {
+	    	    var response = JSON.parse(req.responseText);
+	    	    if ( response.status == 'complete' ) {
+    				return true;
+				} else if ( response.status == 'pending' 
+					&& (response.hintCode == 'started' || response.hintCode == 'userSign')  ) {
+					let qrcode = document.getElementById('qrcode');
+					if ( qrcode !== null ) {
+					  qrcode.style.display = 'none';
+					}
+					let target = document.getElementById('progress-loader');
+					let loading = document.getElementById('loading').style.display = 'flex';
+    				if ( target !== null && loading !== null) {
+						let spinner = new Spin.Spinner(opts).spin(target);
+    					document.getElementById('loading').style.display = 'flex';
+					}
+				}	
     		}
     		else if( req.status!=200 ) {
     			redirectToError(JSON.parse(req.responseText).hintCode);	

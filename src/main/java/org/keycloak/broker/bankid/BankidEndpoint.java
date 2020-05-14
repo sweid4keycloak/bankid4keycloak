@@ -1,5 +1,6 @@
 package org.keycloak.broker.bankid;
 
+import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -26,6 +27,11 @@ import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.forms.login.LoginFormsProvider;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 
 public class BankidEndpoint {
 
@@ -244,6 +250,34 @@ public class BankidEndpoint {
 				.setError("bankid.hints." + hint.messageShortName)
 				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
     }
+	
+	@GET
+	@Path("/qrcode")
+	public Response qrcode(@Context HttpServletRequest request) {
+		AuthResponse authResponse;
+		if ( request.getSession().getAttribute("authresponse") != null ) {
+			authResponse = (AuthResponse)request.getSession().getAttribute("authresponse");		
+		   try {
+	
+	            int width = 246;
+	            int height = 246;
+	
+	            QRCodeWriter writer = new QRCodeWriter();
+	            final BitMatrix bitMatrix = writer.encode("bankid:///?autostarttoken=" + authResponse.getAutoStartToken(), BarcodeFormat.QR_CODE, width, height);
+	
+	            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	            
+	            MatrixToImageWriter.writeToStream(bitMatrix, "png", bos);
+	            bos.close();
+	
+	            return Response.ok(bos.toByteArray(), "image/png").build();
+	        } catch (Exception e) {
+	            throw new RuntimeException(e);
+	        }
+		}
+		return Response.serverError().build();
+    }
+
 
 	public BankidIdentityProviderConfig getConfig() {
 		return config;
