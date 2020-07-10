@@ -61,7 +61,7 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	}
 	
 	public boolean isRequiredNin() {
-		return new Boolean(getConfig().getOrDefault(BANKID_REQUIRE_NIN, "true"));
+		return new Boolean(getConfig().getOrDefault(BANKID_REQUIRE_NIN, "false"));
 	}
 	
 	public boolean isSaveNinHashed() {
