@@ -97,10 +97,9 @@ public class BankidEndpoint {
 			} else {
 				authResponse = (AuthResponse) request.getSession().getAttribute("bankid.authresponse");
 			}
-
 			return loginFormsProvider.setAttribute("state", state)
 					.setAttribute("autoStartToken", authResponse.getAutoStartToken())
-					.setAttribute("showqr", config.isShowQRCode()).setAttribute("currentUrl", request.getRequestURL())
+					.setAttribute("showqr", config.isShowQRCode())
 					.createForm("login-bankid.ftl");
 		} catch (BankidClientException e) {
 			clearAllBankidFromSession(request.getSession());
