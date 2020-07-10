@@ -19,24 +19,23 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 	public BankidIdentityProvider(KeycloakSession session, BankidIdentityProviderConfig config) {
 		super(session, config);
 	}
-	
+
 	@Override
 	public Object callback(RealmModel realm, AuthenticationCallback callback, EventBuilder event) {
 		return new BankidEndpoint(this, getConfig(), callback);
 	}
-	
+
 	@Override
 	public Response performLogin(AuthenticationRequest request) {
 		try {
-			return Response.temporaryRedirect(
-					new URI(request.getRedirectUri() 
-							+ "/start?state="+ request.getState().getEncoded()))
+			return Response.status(302)
+					.location(new URI(request.getRedirectUri() + "/start?state=" + request.getState().getEncoded()))
 					.build();
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException();
 		}
 	}
-	
+
 	public KeycloakSession getSession() {
 		return this.session;
 	}
@@ -45,14 +44,12 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 	public Response retrieveToken(KeycloakSession session, FederatedIdentityModel identity) {
 		return Response.ok(identity.getToken()).build();
 	}
-	
+
 	public HttpClient buildBankidHttpClient() {
-		
+
 		try {
-			return (new HttpClientBuilder())
-					.keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
-					.trustStore(getConfig().getTrustStore())
-					.build();
+			return (new HttpClientBuilder()).keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
+					.trustStore(getConfig().getTrustStore()).build();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to create BankID HTTP Client", e);
 		}
