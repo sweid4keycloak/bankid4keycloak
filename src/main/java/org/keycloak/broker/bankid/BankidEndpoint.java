@@ -100,6 +100,7 @@ public class BankidEndpoint {
 			return loginFormsProvider.setAttribute("state", state)
 					.setAttribute("autoStartToken", authResponse.getAutoStartToken())
 					.setAttribute("showqr", config.isShowQRCode())
+					.setAttribute("ninRequired", config.isRequiredNin())
 					.createForm("login-bankid.ftl");
 		} catch (BankidClientException e) {
 			clearAllBankidFromSession(request.getSession());
@@ -199,11 +200,13 @@ public class BankidEndpoint {
 			clearAllBankidFromSession(request.getSession());
 			return callback.error(state, "bankid.hints." + BankidHintCodes.internal.messageShortName);
 		}
-		String orderRef = ((AuthResponse) request.getSession().getAttribute("bankid.authresponse")).getOrderRef();
-		bankidClient.sendCancel(orderRef);
+		AuthResponse authResponse = (AuthResponse) request.getSession().getAttribute("bankid.authresponse");
+		if ( authResponse != null ) {
+			String orderRef = authResponse.getOrderRef();
+			bankidClient.sendCancel(orderRef);
+		}
 		// Make sure to remove the authresponse attribute from the session
 		clearAllBankidFromSession(request.getSession());
-
 		return callback.error(state, "bankid.hints." + BankidHintCodes.cancelled.messageShortName);
 	}
 
