@@ -31,4 +31,15 @@ public enum BankidHintCodes {
     private BankidHintCodes(String messageShortName) {
         this.messageShortName = messageShortName;
     }
+
+	public static BankidHintCodes map(String value) {
+		if (value != null) {
+			for (BankidHintCodes hint : BankidHintCodes.values()) {
+				if (hint.messageShortName.equals(value)) {
+					return hint;
+				}
+			}
+		}
+		return unkown;
+	}
 }

@@ -10,7 +10,7 @@ public class BankidIdentityProviderFactory extends AbstractIdentityProviderFacto
 	
 	@Override
 	public String getName() {
-		return "BankID e-legitimation";
+		return "Swedish BankID e-legitimation";
 	}
 
 	@Override

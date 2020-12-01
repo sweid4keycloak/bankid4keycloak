@@ -43,7 +43,7 @@ public class BankidEndpoint {
 	private static final Logger logger = Logger.getLogger(BankidEndpoint.class);
 
 	public BankidEndpoint(BankidIdentityProvider provider, BankidIdentityProviderConfig config,
-			AuthenticationCallback callback) {
+						  AuthenticationCallback callback) {
 		this.config = config;
 		this.callback = callback;
 		this.provider = provider;
@@ -218,11 +218,8 @@ public class BankidEndpoint {
 
 		BankidHintCodes hint;
 		// Sanitize input from the web
-		try {
-			hint = BankidHintCodes.valueOf(hintCode);
-		} catch (IllegalArgumentException e) {
-			hint = BankidHintCodes.unkown;
-		}
+		hint = BankidHintCodes.map(hintCode);
+
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 		return loginFormsProvider.setError("bankid.hints." + hint.messageShortName)
 				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
