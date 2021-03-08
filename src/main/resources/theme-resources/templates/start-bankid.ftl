@@ -1,5 +1,5 @@
 <#import "template.ftl" as layout>
-<@layout.registrationLayout displayInfo=false displayWide=false; section>
+<@layout.registrationLayout displayInfo=false; section>
 
 <#if section = "form">
     <div id="error" style="color:red; display:none;">${msg("bankid.hint.LOCAL1")}</div>
