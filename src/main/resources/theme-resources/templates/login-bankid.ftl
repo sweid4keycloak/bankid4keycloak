@@ -1,5 +1,5 @@
 <#import "template.ftl" as layout>
-<@layout.registrationLayout displayInfo=false displayWide=false; section>
+<@layout.registrationLayout displayInfo=false; section>
 <#if section = "form">
 	<link href="${url.resourcesPath}/css/spin.css" rel="stylesheet" />
 	<script type="text/javascript" src="${url.resourcesPath}/js/spin.umd.js"></script>
