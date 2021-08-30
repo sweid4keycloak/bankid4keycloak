@@ -28,6 +28,8 @@ import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.sessions.AuthenticationSessionModel;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -41,6 +43,9 @@ public class BankidEndpoint {
 	private BankidIdentityProvider provider;
 	private SimpleBankidClient bankidClient;
 	private static final Logger logger = Logger.getLogger(BankidEndpoint.class);
+
+	@Context
+	protected KeycloakSession session;
 
 	public BankidEndpoint(BankidIdentityProvider provider, BankidIdentityProviderConfig config,
 			AuthenticationCallback callback) {
@@ -57,7 +62,7 @@ public class BankidEndpoint {
 		state = getOrSetStringFromSession(request.getSession(), "bankid.state", state);
 
 		if (state == null) {
-			return callback.error(state, "bankid.hints." + BankidHintCodes.internal.messageShortName);
+			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
 		}
 		if (config.isRequiredNin()) {
 			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
@@ -99,8 +104,7 @@ public class BankidEndpoint {
 			}
 			return loginFormsProvider.setAttribute("state", state)
 					.setAttribute("autoStartToken", authResponse.getAutoStartToken())
-					.setAttribute("showqr", config.isShowQRCode())
-					.setAttribute("ninRequired", config.isRequiredNin())
+					.setAttribute("showqr", config.isShowQRCode()).setAttribute("ninRequired", config.isRequiredNin())
 					.createForm("login-bankid.ftl");
 		} catch (BankidClientException e) {
 			clearAllBankidFromSession(request.getSession());
@@ -150,7 +154,7 @@ public class BankidEndpoint {
 		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
 		if (state == null) {
 			clearAllBankidFromSession(request.getSession());
-			return callback.error(state, "bankid.hints." + BankidHintCodes.internal.messageShortName);
+			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
 		}
 
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
@@ -166,6 +170,8 @@ public class BankidEndpoint {
 		// Make sure to remove the authresponse attribute from the session
 		clearAllBankidFromSession(request.getSession());
 		try {
+			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
+			session.getContext().setAuthenticationSession(authSession);
 			BrokeredIdentityContext identity = new BrokeredIdentityContext(getUsername(user));
 
 			identity.setIdpConfig(config);
@@ -173,7 +179,7 @@ public class BankidEndpoint {
 			identity.setUsername(getUsername(user));
 			identity.setFirstName(user.getGivenName());
 			identity.setLastName(user.getSurname());
-			identity.setCode(state);
+			identity.setAuthenticationSession(authSession);
 
 			return callback.authenticated(identity);
 		} catch (Exception e) {
@@ -198,16 +204,16 @@ public class BankidEndpoint {
 		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
 		if (state == null) {
 			clearAllBankidFromSession(request.getSession());
-			return callback.error(state, "bankid.hints." + BankidHintCodes.internal.messageShortName);
+			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
 		}
 		AuthResponse authResponse = (AuthResponse) request.getSession().getAttribute("bankid.authresponse");
-		if ( authResponse != null ) {
+		if (authResponse != null) {
 			String orderRef = authResponse.getOrderRef();
 			bankidClient.sendCancel(orderRef);
 		}
 		// Make sure to remove the authresponse attribute from the session
 		clearAllBankidFromSession(request.getSession());
-		return callback.error(state, "bankid.hints." + BankidHintCodes.cancelled.messageShortName);
+		return callback.error("bankid.hints." + BankidHintCodes.cancelled.messageShortName);
 	}
 
 	@GET
