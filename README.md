@@ -1,7 +1,7 @@
 # BankID Identity Provider for Keycloak
 
 BankID4Keycloak is an identity provider for Keycloak, giving it superpowers by adding support for Swedish BankID.
-Please note, in order to use this in production a valid BankID contract is required, for more information see [this page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info).
+Please note, in order to use this in production a valid BankID contract is required, for more information see [this page](https://www.bankid.com/utvecklare/guider).
 
 ## Legal Notice
 
@@ -28,9 +28,9 @@ In order to access the BankID API a client certificate and a truststore is requi
 
 
 ### Client certificate
-To use BankID in production a valid contract is required, please contact one of the banks acting as resellers for [more information](https://www.bankid.com/bankid-i-dina-tjanster).
+To use BankID in production a valid contract is required, please contact one of the banks acting as resellers for [more information](https://www.bankid.com/utvecklare/guider/skapa-fp-certifikat).
 
-A certificate for the BankID test environment can be downloaded using the following [page](https://www.bankid.com/bankid-i-dina-tjanster/rp-info)
+A certificate for the BankID test environment can be downloaded using the following [page](https://www.bankid.com/utvecklare/test)
 
 The password for the PKCS12 container and the private key is: qwerty123
 
