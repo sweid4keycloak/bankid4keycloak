@@ -57,14 +57,14 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	}
 	
 	public boolean isShowQRCode() {
-		return new Boolean(getConfig().getOrDefault(BANKID_SHOW_QR_CODE, "false"));
+		return Boolean.valueOf(getConfig().getOrDefault(BANKID_SHOW_QR_CODE, "false"));
 	}
 	
 	public boolean isRequiredNin() {
-		return new Boolean(getConfig().getOrDefault(BANKID_REQUIRE_NIN, "false"));
+		return Boolean.valueOf(getConfig().getOrDefault(BANKID_REQUIRE_NIN, "false"));
 	}
 	
 	public boolean isSaveNinHashed() {
-		return new Boolean(getConfig().getOrDefault(BANKID_SAVE_NIN_HASH, "false"));
+		return Boolean.valueOf(getConfig().getOrDefault(BANKID_SAVE_NIN_HASH, "false"));
 	}
 }
