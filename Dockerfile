@@ -1,2 +1,7 @@
-FROM jboss/keycloak:15.0.1
-ADD target/bankid4keycloak-1.0.0-SNAPSHOT.jar /opt/jboss/keycloak/standalone/deployments/
+FROM docker.io/library/maven:3-eclipse-temurin-11 as builder
+WORKDIR /app
+COPY . .
+RUN mvn clean package
+
+FROM quay.io/keycloak/keycloak:20.0.5
+COPY --from=builder /app/target/bankid4keycloak-*.jar /opt/keycloak/providers
