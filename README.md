@@ -3,6 +3,9 @@
 BankID4Keycloak is an identity provider for Keycloak, giving it superpowers by adding support for Swedish BankID.
 Please note, in order to use this in production a valid BankID contract is required, for more information see [this page](https://www.bankid.com/utvecklare/guider).
 
+:warning: Since `Keycloak v21.0.0` this extension cannot be used effectively. The old AngularJS-based Admin-UI got removed completely and at least for now there's no way of displaying all necessary configuration options in order to configure this extension properly in Keycloak. To fix this there needs to be changes made to code Keycloak see [keycloak #15344](https://github.com/keycloak/keycloak/issues/15344).
+For now, the latest version this extension is compatible with is `v20.0.5` provided that you switch the admin theme to `keycloak`.
+
 ## Legal Notice
 
 BankID is a registered trademark of Finansiell ID Teknik BID AB. We are not affiliated with, endorsed or sponsored by Finansiell ID Teknik BID AB.
@@ -20,8 +23,10 @@ Running the command above will create a jar-file in the *target* directory.
 
 Copy the jar file to the Keycloak deployments directory. For further information on how to deploy components in Keycloak please see [this page](https://www.keycloak.org/docs/latest/server_development).
 
-`cp target/bankid4keycloak-1.0.0-SNAPSHOT.jar <KEYCLOAK_HOME>/standalone/deployments/`
-
+```
+cp target/bankid4keycloak-1.0.0-SNAPSHOT.jar <KEYCLOAK_HOME>/providers
+<KEYCLOAK_HOME>/bin/kc.[sh|bat] build
+```
 
 ## Client certificate and truststore
 In order to access the BankID API a client certificate and a truststore is required, both in PKCS12 format.
@@ -44,6 +49,11 @@ The CA Certificate is available in the PDF "BankID Relying Party Guidelines v3.2
 ## Configure
 
 Start Keycloak and log in to the admin console.
+
+:warning: It's not yet compatible to the new `Admin UI (keycloak.v2)` from Keycloak. If you want to use this provider, you need to enable
+the old Admin UI for the respective realm (mostly `master`, see this 
+paper [Keycloak 19.0.0 release](https://www.keycloak.org/2022/07/keycloak-1900-released.html#_new_admin_console_is_now_the_default_console))
+
 
 Under the "Identity Providers" heading add the "BankID e-legitimation" identity provider.
 
