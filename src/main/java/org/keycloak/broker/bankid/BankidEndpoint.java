@@ -195,13 +195,16 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/cancel")
-	public Response canel(@QueryParam("bankidref") String bankidRef) {
+	public Response cancel(@QueryParam("bankidref") String bankidRef) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-		logger.error(String.format("%s = %s", bankidRef, this.actionTokenCache.get(bankidRef)));
+		
+		if (!this.actionTokenCache.containsKey(bankidRef) ||
+			!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
+		}
 
 		if (!this.actionTokenCache.containsKey(bankidRef) ||
 			!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
-			logger.error("Session attribute 'bankidUser' not set or not correct type.");
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 
@@ -210,8 +213,8 @@ public class BankidEndpoint {
 			String orderRef = authResponse.getOrderRef();
 			bankidClient.sendCancel(orderRef);
 		}
-		// Make sure to remove the authresponse attribute from the session
-		return callback.error("bankid.hints." + BankidHintCodes.cancelled.messageShortName);
+		return loginFormsProvider.setError("bankid.hints." + BankidHintCodes.cancelled.messageShortName)
+			.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@GET
