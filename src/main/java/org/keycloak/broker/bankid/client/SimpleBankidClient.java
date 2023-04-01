@@ -35,7 +35,7 @@ public class SimpleBankidClient {
 		}
 		requestData.put("endUserIp", endUserIp);
 
-		Response response = sendRequest("/rp/v5/auth", requestData);
+		Response response = sendRequest("/rp/v5.1/auth", requestData);
 
 		try {
 			return response.asJson(AuthResponse.class);
@@ -49,7 +49,7 @@ public class SimpleBankidClient {
 		Map<String, String> requestData = new HashMap<>();
 		requestData.put("orderRef", orderrRef);
 		try {
-			Response response = sendRequest("/rp/v5/collect", requestData);
+			Response response = sendRequest("/rp/v5.1/collect", requestData);
 			CollectResponse responseData  = response.asJson(CollectResponse.class);
 			// TODO: Handle when status is failed
 			return responseData;
@@ -63,7 +63,7 @@ public class SimpleBankidClient {
 		Map<String, String> requestData = new HashMap<>();
 		requestData.put("orderRef", orderrRef);
 		try {
-			sendRequest("/rp/v5/cancel", requestData);
+			sendRequest("/rp/v5.1/cancel", requestData);
 			return;
 		} catch (Exception e) {
 			logger.warn("Failed cancel BankID auth request " + orderrRef, e);

@@ -4,7 +4,9 @@ public class AuthResponse {
 	
 	String orderRef;
 	String autoStartToken;
-	
+	String qrStartToken;
+	String qrStartSecret;
+
 	public void setAutoStartToken(String autoStartToken) {
 		this.autoStartToken = autoStartToken;
 	}
@@ -18,5 +20,20 @@ public class AuthResponse {
 	public String getOrderRef() {
 		return orderRef;
 	}
+
+	public void setQrStartToken(String qrStartToken) {
+		this.qrStartToken = qrStartToken;
+	}
+	public String getQrStartToken() {
+		return qrStartToken;
+	}
+	
+	public void setQrStartSecret(String qrStartSecret) {
+		this.qrStartSecret = qrStartSecret;
+	}
+	public String getQrStartSecret() {
+		return qrStartSecret;
+	}
+
 
 }
