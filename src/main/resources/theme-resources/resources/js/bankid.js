@@ -20,16 +20,16 @@ function poll(fn, callback, errback, timeout, interval) {
 	    })();
 }
 
-function redirectToDone() {
-	window.location.href = "done";
+function redirectToDone(bankidref, state) {
+	window.location.href = "done?bankidref=" + bankidref + "&state=" + state;
 }
 
 function redirectToError(errorCode) {
 	window.location.href = "error?code=" + errorCode;
 }
 
-function redirectToCancel(errorCode) {
-	window.location.href = "cancel";
+function redirectToCancel(errorCode, bankidref) {
+	window.location.href = "cancel?bankidref=" + bankidref;
 }
 
 /* For login form */

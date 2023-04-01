@@ -5,9 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.infinispan.Cache;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
@@ -27,6 +28,7 @@ import org.keycloak.broker.bankid.model.BankidUser;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
+import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -44,6 +46,8 @@ public class BankidEndpoint {
 	private SimpleBankidClient bankidClient;
 	private static final Logger logger = Logger.getLogger(BankidEndpoint.class);
 
+	private Cache<Object, Object> actionTokenCache ;
+
 	@Context
 	protected KeycloakSession session;
 
@@ -53,61 +57,62 @@ public class BankidEndpoint {
 		this.callback = callback;
 		this.provider = provider;
 		this.bankidClient = new SimpleBankidClient(provider.buildBankidHttpClient(), config.getApiUrl());
+		InfinispanConnectionProvider infinispanConnectionProvider =
+                provider.getSession().getProvider(InfinispanConnectionProvider.class);
+    	this.actionTokenCache =
+            infinispanConnectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
 	}
 
 	@GET
 	@Path("/start")
-	public Response start(@QueryParam("state") String state, @Context HttpServletRequest request) {
-
-		state = getOrSetStringFromSession(request.getSession(), "bankid.state", state);
+	public Response start(@QueryParam("state") String state) {
 
 		if (state == null) {
 			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
 		}
+
 		if (config.isRequiredNin()) {
 			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-			return loginFormsProvider.createForm("start-bankid.ftl");
+			return loginFormsProvider
+				.setAttribute("state", state)
+				.createForm("start-bankid.ftl");
 		} else {
 			// Go direct to login if we do not require non.
-			return doLogin(null, request);
+			return doLogin(null, state);
 		}
 	}
 
 	@POST
 	@Path("/login")
-	public Response loginPost(@FormParam("nin") String nin, @Context HttpServletRequest request) {
-		return doLogin(nin, request);
+	public Response loginPost(@FormParam("nin") String nin, @FormParam("state") String state) {
+		return doLogin(nin, state);
 	}
 
 	@GET
 	@Path("/login")
-	public Response loginGet(@Context HttpServletRequest request) {
-		return doLogin(null, request);
+	public Response loginGet(@QueryParam("state") String state) {
+		return doLogin(null, state);
 	}
 
-	private Response doLogin(String nin, @Context HttpServletRequest request) {
+	private Response doLogin(String nin, String state) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 
-		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
-		if (state == null) {
-			clearAllBankidFromSession(request.getSession());
-			return loginFormsProvider.setError("bankid.hints." + BankidHintCodes.internal.messageShortName)
-					.createErrorPage(Status.INTERNAL_SERVER_ERROR);
-		}
+		// TODO: Make sure we do not have a session already running
 		try {
 			AuthResponse authResponse;
-			if (request.getSession().getAttribute("bankid.authresponse") == null) {
-				authResponse = bankidClient.sendAuth(nin, request.getRemoteAddr());
-				request.getSession().setAttribute("bankid.authresponse", authResponse);
-			} else {
-				authResponse = (AuthResponse) request.getSession().getAttribute("bankid.authresponse");
-			}
-			return loginFormsProvider.setAttribute("state", state)
+			authResponse = bankidClient.sendAuth(nin, session.getContext().getConnection().getRemoteAddr());
+			
+			UUID bankidRef = UUID.randomUUID();
+			// TODO: We should put a life span on this .... 
+			// this.actionTokenCache.put(bankidRef.toString(), authResponse, lifespan, lifespanunit);
+			this.actionTokenCache.put(bankidRef.toString(), authResponse);
+			return loginFormsProvider
+					.setAttribute("bankidref", bankidRef.toString())
+					.setAttribute("state", state)
 					.setAttribute("autoStartToken", authResponse.getAutoStartToken())
 					.setAttribute("showqr", config.isShowQRCode()).setAttribute("ninRequired", config.isRequiredNin())
 					.createForm("login-bankid.ftl");
 		} catch (BankidClientException e) {
-			clearAllBankidFromSession(request.getSession());
 			return loginFormsProvider.setError("bankid.hints." + e.getHintCode().messageShortName)
 					.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
@@ -115,9 +120,10 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/collect")
-	public Response collect(@Context HttpServletRequest request) {
-		if (request.getSession().getAttribute("bankid.authresponse") != null) {
-			String orderref = ((AuthResponse) request.getSession().getAttribute("bankid.authresponse")).getOrderRef();
+	public Response collect(@QueryParam("bankidref") String bankidRef) {
+
+		if (this.actionTokenCache.containsKey(bankidRef)) {
+			String orderref = ((AuthResponse) this.actionTokenCache.get(bankidRef)).getOrderRef();
 			try {
 				CollectResponse responseData = bankidClient.sendCollect(orderref);
 				// Check responseData.getStatus()
@@ -128,8 +134,7 @@ public class BankidEndpoint {
 							.type(MediaType.APPLICATION_JSON_TYPE).build();
 				} else {
 					if ("complete".equalsIgnoreCase(responseData.getStatus())) {
-						request.getSession().removeAttribute("bankid.authresponse");
-						request.getSession().setAttribute("bankid.user", responseData.getCompletionData().getUser());
+						this.actionTokenCache.put(bankidRef, responseData.getCompletionData().getUser());
 					}
 					return Response.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }",
 							responseData.getStatus(), responseData.getHintCode()), MediaType.APPLICATION_JSON_TYPE)
@@ -149,26 +154,17 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/done")
-	public Response done(@Context HttpServletRequest request) {
-
-		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
-		if (state == null) {
-			clearAllBankidFromSession(request.getSession());
-			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
-		}
-
+	public Response done(@QueryParam("state") String state, @QueryParam("bankidref") String bankidRef) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 
-		if (request.getSession().getAttribute("bankid.user") == null
-				|| !(request.getSession().getAttribute("bankid.user") instanceof BankidUser)) {
+		if (!this.actionTokenCache.containsKey(bankidRef) ||
+			!(this.actionTokenCache.get(bankidRef) instanceof BankidUser)) {
 			logger.error("Session attribute 'bankidUser' not set or not correct type.");
-			clearAllBankidFromSession(request.getSession());
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
-		BankidUser user = (BankidUser) request.getSession().getAttribute("bankid.user");
 
+		BankidUser user = (BankidUser) this.actionTokenCache.get(bankidRef);
 		// Make sure to remove the authresponse attribute from the session
-		clearAllBankidFromSession(request.getSession());
 		try {
 			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
 			session.getContext().setAuthenticationSession(authSession);
@@ -199,29 +195,29 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/cancel")
-	public Response canel(@Context HttpServletRequest request) {
+	public Response canel(@QueryParam("bankidref") String bankidRef) {
+		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
+		logger.error(String.format("%s = %s", bankidRef, this.actionTokenCache.get(bankidRef)));
 
-		String state = getOrSetStringFromSession(request.getSession(), "bankid.state", null);
-		if (state == null) {
-			clearAllBankidFromSession(request.getSession());
-			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
+		if (!this.actionTokenCache.containsKey(bankidRef) ||
+			!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+			logger.error("Session attribute 'bankidUser' not set or not correct type.");
+			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
-		AuthResponse authResponse = (AuthResponse) request.getSession().getAttribute("bankid.authresponse");
+
+		AuthResponse authResponse = (AuthResponse) this.actionTokenCache.get(bankidRef);
 		if (authResponse != null) {
 			String orderRef = authResponse.getOrderRef();
 			bankidClient.sendCancel(orderRef);
 		}
 		// Make sure to remove the authresponse attribute from the session
-		clearAllBankidFromSession(request.getSession());
 		return callback.error("bankid.hints." + BankidHintCodes.cancelled.messageShortName);
 	}
 
 	@GET
 	@Path("/error")
-	public Response error(@QueryParam("code") String hintCode, @Context HttpServletRequest request) {
-		// Make sure to remove the authresponse attribute from the session
-		clearAllBankidFromSession(request.getSession());
-
+	public Response error(@QueryParam("code") String hintCode) {
+		
 		BankidHintCodes hint;
 		// Sanitize input from the web
 		try {
@@ -236,10 +232,19 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/qrcode")
-	public Response qrcode(@Context HttpServletRequest request) {
-		AuthResponse authResponse;
-		if (request.getSession().getAttribute("bankid.authresponse") != null) {
-			authResponse = (AuthResponse) request.getSession().getAttribute("bankid.authresponse");
+	public Response qrcode(@QueryParam("bankidref") String bankidRef) {
+		logger.error(String.format("%s = %s", bankidRef, this.actionTokenCache.get(bankidRef)));
+		
+		if (this.actionTokenCache.containsKey(bankidRef)) {
+			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
+			if (!this.actionTokenCache.containsKey(bankidRef) &&
+				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+				logger.error("Session attribute 'bankidUser' not set or not correct type.");
+				return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
+			}
+	
+			AuthResponse authResponse = (AuthResponse) this.actionTokenCache.get(bankidRef);
+			String autostarttoken = authResponse.getAutoStartToken();
 			try {
 
 				int width = 246;
@@ -247,7 +252,7 @@ public class BankidEndpoint {
 
 				QRCodeWriter writer = new QRCodeWriter();
 				final BitMatrix bitMatrix = writer.encode(
-						"bankid:///?autostarttoken=" + authResponse.getAutoStartToken(), BarcodeFormat.QR_CODE, width,
+						"bankid:///?autostarttoken=" + autostarttoken, BarcodeFormat.QR_CODE, width,
 						height);
 
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -266,23 +271,4 @@ public class BankidEndpoint {
 	public BankidIdentityProviderConfig getConfig() {
 		return config;
 	}
-
-	private String getOrSetStringFromSession(HttpSession session, String name, String defaultValue) {
-		if (session.getAttribute(name) == null) {
-			session.setAttribute(name, defaultValue);
-		}
-		Object value = session.getAttribute(name);
-		return (value == null ? null : value.toString());
-	}
-
-	private void clearAllBankidFromSession(HttpSession session) {
-
-		for (Enumeration<String> names = session.getAttributeNames(); names.hasMoreElements();) {
-			String name = names.nextElement();
-			if (name.startsWith("bankid.")) {
-				session.removeAttribute(name);
-			}
-		}
-	}
-
 }
