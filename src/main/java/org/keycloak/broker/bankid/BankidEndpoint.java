@@ -4,9 +4,8 @@ import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -45,6 +44,10 @@ public class BankidEndpoint {
 	private BankidIdentityProvider provider;
 	private SimpleBankidClient bankidClient;
 	private static final Logger logger = Logger.getLogger(BankidEndpoint.class);
+
+	// The maximum number of minutes to store bankid session info in the token cache
+	// Setting this to 5 since BankID will timeout after 3 minutes 
+	private static long MAX_CACHE_LIFESPAN = 5;
 
 	private Cache<Object, Object> actionTokenCache ;
 
@@ -97,15 +100,12 @@ public class BankidEndpoint {
 	private Response doLogin(String nin, String state) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 
-		// TODO: Make sure we do not have a session already running
 		try {
 			AuthResponse authResponse;
 			authResponse = bankidClient.sendAuth(nin, session.getContext().getConnection().getRemoteAddr());
 			
 			UUID bankidRef = UUID.randomUUID();
-			// TODO: We should put a life span on this .... 
-			// this.actionTokenCache.put(bankidRef.toString(), authResponse, lifespan, lifespanunit);
-			this.actionTokenCache.put(bankidRef.toString(), authResponse);
+			this.actionTokenCache.put(bankidRef.toString(), authResponse, MAX_CACHE_LIFESPAN, TimeUnit.MINUTES);
 			return loginFormsProvider
 					.setAttribute("bankidref", bankidRef.toString())
 					.setAttribute("state", state)
@@ -121,6 +121,11 @@ public class BankidEndpoint {
 	@GET
 	@Path("/collect")
 	public Response collect(@QueryParam("bankidref") String bankidRef) {
+		if (!this.actionTokenCache.containsKey(bankidRef) ||
+			!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
+			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
+		}
 
 		if (this.actionTokenCache.containsKey(bankidRef)) {
 			String orderref = ((AuthResponse) this.actionTokenCache.get(bankidRef)).getOrderRef();
@@ -235,14 +240,11 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/qrcode")
-	public Response qrcode(@QueryParam("bankidref") String bankidRef) {
-		logger.error(String.format("%s = %s", bankidRef, this.actionTokenCache.get(bankidRef)));
-		
+	public Response qrcode(@QueryParam("bankidref") String bankidRef) {		
 		if (this.actionTokenCache.containsKey(bankidRef)) {
 			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 			if (!this.actionTokenCache.containsKey(bankidRef) &&
 				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
-				logger.error("Session attribute 'bankidUser' not set or not correct type.");
 				return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 			}
 	
