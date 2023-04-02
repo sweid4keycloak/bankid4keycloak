@@ -25,6 +25,7 @@ import org.keycloak.broker.bankid.model.AuthResponse;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
 import org.keycloak.broker.bankid.model.BankidUser;
 import org.keycloak.broker.bankid.model.CollectResponse;
+import org.keycloak.broker.bankid.model.CompletionData;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
@@ -139,7 +140,7 @@ public class BankidEndpoint {
 							.type(MediaType.APPLICATION_JSON_TYPE).build();
 				} else {
 					if ("complete".equalsIgnoreCase(responseData.getStatus())) {
-						this.actionTokenCache.put(bankidRef, responseData.getCompletionData().getUser());
+						this.actionTokenCache.put(bankidRef, responseData.getCompletionData());
 					}
 					return Response.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }",
 							responseData.getStatus(), responseData.getHintCode()), MediaType.APPLICATION_JSON_TYPE)
@@ -163,23 +164,31 @@ public class BankidEndpoint {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 
 		if (!this.actionTokenCache.containsKey(bankidRef) ||
-			!(this.actionTokenCache.get(bankidRef) instanceof BankidUser)) {
-			logger.error("Session attribute 'bankidUser' not set or not correct type.");
+			!(this.actionTokenCache.get(bankidRef) instanceof CompletionData)) {
+			logger.error("Action token cache does not have a CompletionData object.");
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 
-		BankidUser user = (BankidUser) this.actionTokenCache.get(bankidRef);
+		CompletionData completionData = (CompletionData) this.actionTokenCache.get(bankidRef);
+		BankidUser user = completionData.getUser();
 		// Make sure to remove the authresponse attribute from the session
 		try {
 			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
 			session.getContext().setAuthenticationSession(authSession);
-			BrokeredIdentityContext identity = new BrokeredIdentityContext(getUsername(user));
+			BrokeredIdentityContext identity = new BrokeredIdentityContext(getConfig().getAlias().concat("." + getUsername(user)));
 
 			identity.setIdpConfig(config);
 			identity.setIdp(provider);
 			identity.setUsername(getUsername(user));
 			identity.setFirstName(user.getGivenName());
 			identity.setLastName(user.getSurname());
+
+			// Set user session notes
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".pnr"), getUsername(user));
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".cert.notbefore"), completionData.getCert().getNotBefore());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".cert.notafter"), completionData.getCert().getNotAfter());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".device.ipaddress"), completionData.getDevice().getIpAddress());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".ocspresponse"), completionData.getOcspResponse());
 			identity.setAuthenticationSession(authSession);
 
 			return callback.authenticated(identity);
