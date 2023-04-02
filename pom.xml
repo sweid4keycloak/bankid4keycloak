@@ -25,7 +25,7 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub bankid4keycloak Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/bankid4keycloak/bankid4keycloak</url>
+			<url>https://maven.pkg.github.com/sweid4keycloak/bankid4keycloak</url>
 		</repository>
 	</distributionManagement>
 	<dependencies>
