@@ -59,3 +59,23 @@ function validateForm() {
 	}
 	return success;
 }
+
+async function pollQrCode() {
+	const url='qrcode?bankidref=' + document.getElementById('bankidref').value;
+  await new Promise(r => setTimeout(r, 1000));
+	const req = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+  req.onloadend = (e) => {
+    if (req.readyState === 4 && req.status != 200) {
+      redirectToError("RFA5");
+    }
+    var urlCreator = window.URL || window.webkitURL;
+    var imageUrl = urlCreator.createObjectURL(req.response);
+    var oldUrl = document.querySelector("#qrcode-img").src; 
+    document.querySelector("#qrcode-img").src = imageUrl;
+    // FIXME: Clean up object URLs somehow, this does not seem to work
+    urlCreator.revokeObjectURL(oldUrl);
+  };
+	req.open("GET", url);
+  req.responseType = "blob";
+	req.send();
+}

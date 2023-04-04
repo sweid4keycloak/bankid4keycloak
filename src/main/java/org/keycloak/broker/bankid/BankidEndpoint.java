@@ -1,12 +1,17 @@
 package org.keycloak.broker.bankid;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -15,9 +20,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.CacheControl;
 
 import org.infinispan.Cache;
+import org.infinispan.protostream.types.java.math.BigIntegerAdapter;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
@@ -30,6 +38,7 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.keys.SecretKeyMetadata;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
@@ -51,6 +60,8 @@ public class BankidEndpoint {
 	private static long MAX_CACHE_LIFESPAN = 5;
 
 	private Cache<Object, Object> actionTokenCache ;
+
+       private static String qrCodePrefix = "bankid.";
 
 	@Context
 	protected KeycloakSession session;
@@ -258,7 +269,18 @@ public class BankidEndpoint {
 			}
 	
 			AuthResponse authResponse = (AuthResponse) this.actionTokenCache.get(bankidRef);
-			String autostarttoken = authResponse.getAutoStartToken();
+      long elapsedTime = (System.currentTimeMillis() / 1000) - authResponse.getAuthTimestamp();
+
+      String qrAuthCode;
+      try {
+        qrAuthCode = generateQrAuthCode(authResponse.getQrStartSecret(), Long.toString(elapsedTime));
+      } catch (Exception e) {
+        logger.error("Failed to generate qrAuthCode");
+        throw new RuntimeException(e);
+      }
+
+      String qrCode = qrCodePrefix + authResponse.getQrStartToken() + "." + elapsedTime + "." + qrAuthCode;
+
 			try {
 
 				int width = 246;
@@ -266,7 +288,7 @@ public class BankidEndpoint {
 
 				QRCodeWriter writer = new QRCodeWriter();
 				final BitMatrix bitMatrix = writer.encode(
-						"bankid:///?autostarttoken=" + autostarttoken, BarcodeFormat.QR_CODE, width,
+            qrCode, BarcodeFormat.QR_CODE, width,
 						height);
 
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -274,7 +296,12 @@ public class BankidEndpoint {
 				MatrixToImageWriter.writeToStream(bitMatrix, "png", bos);
 				bos.close();
 
-				return Response.ok(bos.toByteArray(), "image/png").build();
+        CacheControl cc = new CacheControl();
+        cc.setNoStore(true);
+
+        ResponseBuilder builder = Response.ok(bos.toByteArray(), "image/png");
+        builder.cacheControl(cc);
+        return builder.build();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -285,4 +312,11 @@ public class BankidEndpoint {
 	public BankidIdentityProviderConfig getConfig() {
 		return config;
 	}
+
+  private String generateQrAuthCode(String qrStartSecret, String time) throws InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
+    Mac mac = Mac.getInstance("HmacSHA256");
+    mac.init(new SecretKeySpec(qrStartSecret.getBytes("ascii"), "HmacSHA256"));
+
+    return String.format("%064x", new BigInteger(1, mac.doFinal(new String(time).getBytes())));
+  }
 }
