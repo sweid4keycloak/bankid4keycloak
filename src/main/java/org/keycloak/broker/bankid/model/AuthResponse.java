@@ -6,6 +6,7 @@ public class AuthResponse {
 	String autoStartToken;
 	String qrStartToken;
 	String qrStartSecret;
+	long authTimestamp;
 
 	public void setAutoStartToken(String autoStartToken) {
 		this.autoStartToken = autoStartToken;
@@ -35,5 +36,11 @@ public class AuthResponse {
 		return qrStartSecret;
 	}
 
+	public void setAuthTimestamp(long authTimestamp) {
+		this.authTimestamp = authTimestamp;
+	}
 
+	public long getAuthTimestamp() {
+		return authTimestamp;
+	}
 }

@@ -38,7 +38,9 @@ public class SimpleBankidClient {
 		Response response = sendRequest("/rp/v5.1/auth", requestData);
 
 		try {
-			return response.asJson(AuthResponse.class);
+			AuthResponse ar = response.asJson(AuthResponse.class);
+			ar.setAuthTimestamp(System.currentTimeMillis()/1000);
+			return ar;
 		} catch (IOException e) {
 			logger.error("Failed to parse BankID response", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);
