@@ -11,12 +11,12 @@ public class BankidClientException extends RuntimeException {
 	public BankidClientException(BankidHintCodes hintcode) {
 		this(hintcode, null);
 	}
-	
+
 	public BankidClientException(BankidHintCodes hintcode, Throwable cause) {
 		super(cause);
 		this.hintCode = hintcode;
 	}
-	
+
 	public BankidHintCodes getHintCode() {
 		return hintCode;
 	}
