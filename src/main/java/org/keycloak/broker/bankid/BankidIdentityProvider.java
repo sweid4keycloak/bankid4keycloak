@@ -9,6 +9,7 @@ import org.apache.http.client.HttpClient;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.connections.httpclient.HttpClientBuilder;
+import org.keycloak.connections.httpclient.ProxyMappings;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.KeycloakSession;
@@ -49,7 +50,9 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 
 		try {
 			return (new HttpClientBuilder()).keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
-					.trustStore(getConfig().getTrustStore()).build();
+					.trustStore(getConfig().getTrustStore())
+					.proxyMappings(ProxyMappings.withFixedProxyMapping(System.getenv("HTTPS_PROXY"), ""))
+					.build();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to create BankID HTTP Client", e);
 		}
