@@ -2,10 +2,11 @@ package org.keycloak.broker.bankid;
 
 import java.security.KeyStore;
 
+import org.keycloak.broker.oidc.OIDCIdentityProviderConfig;
 import org.keycloak.common.util.KeystoreUtil;
 import org.keycloak.models.IdentityProviderModel;
 
-public class BankidIdentityProviderConfig extends IdentityProviderModel {
+public class BankidIdentityProviderConfig extends OIDCIdentityProviderConfig {
 	/**
 	 * 
 	 */
@@ -30,10 +31,15 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 
 	public BankidIdentityProviderConfig(IdentityProviderModel model) {
 		super(model);
+		System.err.println("bankid_apiurl " +		model.getConfig().get("bankid_apiurl"));
 	}
 
 	public String getApiUrl() {
-		return getConfig().get(BANKID_APIURL_PROPERTY_NAME);
+		return getConfig().get("apiUrl");
+	}
+
+	public void setApiUrl(final String apiUrl) {
+		getConfig().put("apiUrl", apiUrl);
 	}
 
 	public KeyStore getKeyStore() throws Exception {
@@ -63,8 +69,13 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	}
 
 	public boolean isRequiredNin() {
-		return Boolean.valueOf(getConfig().getOrDefault(BANKID_REQUIRE_NIN, "false"));
+		return Boolean.valueOf(getConfig().getOrDefault("requiredNin", "false"));
 	}
+
+	public void setRequiredNin(boolean requiredNin) {
+		getConfig().put("requiredNin", String.valueOf(requiredNin));
+	}
+
 
 	public boolean isSaveNinHashed() {
 		return Boolean.valueOf(getConfig().getOrDefault(BANKID_SAVE_NIN_HASH, "false"));
