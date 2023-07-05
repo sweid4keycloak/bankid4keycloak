@@ -46,12 +46,26 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 		return Response.ok(identity.getToken()).build();
 	}
 
+	public ProxyMappings generateProxyMapping(){
+		String httpsProxy = System.getenv("HTTPS_PROXY");
+		if(httpsProxy == null){
+			httpsProxy = System.getenv("https_proxy");
+		}
+
+		String noProxy = System.getenv("NO_PROXY");
+		if(noProxy == null){
+			noProxy = System.getenv("no_proxy");
+		}
+
+		return ProxyMappings.withFixedProxyMapping(httpsProxy, noProxy);
+	}
+
 	public HttpClient buildBankidHttpClient() {
 
 		try {
 			return (new HttpClientBuilder()).keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
 					.trustStore(getConfig().getTrustStore())
-					.proxyMappings(ProxyMappings.withFixedProxyMapping(System.getenv("HTTPS_PROXY"), ""))
+					.proxyMappings(generateProxyMapping())
 					.build();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to create BankID HTTP Client", e);
