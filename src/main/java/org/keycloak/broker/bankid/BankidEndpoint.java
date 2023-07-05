@@ -25,7 +25,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.CacheControl;
 
 import org.infinispan.Cache;
-import org.infinispan.protostream.types.java.math.BigIntegerAdapter;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
@@ -38,7 +37,6 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.keys.SecretKeyMetadata;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
 

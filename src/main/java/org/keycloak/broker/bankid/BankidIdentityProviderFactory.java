@@ -18,7 +18,6 @@ public class BankidIdentityProviderFactory extends AbstractIdentityProviderFacto
 		return new BankidIdentityProvider(session, new BankidIdentityProviderConfig(model));
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public BankidIdentityProviderConfig createConfig() {
 		return new BankidIdentityProviderConfig();

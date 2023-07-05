@@ -57,8 +57,6 @@ paper [Keycloak 19.0.0 release](https://www.keycloak.org/2022/07/keycloak-1900-r
 
 Under the "Identity Providers" heading add the "BankID e-legitimation" identity provider.
 
-<picture>
-
 **BankID API base URL:**
 The URL for the BankID api. Please refer to the [BankID Relying Party Guidelines](https://www.bankid.com/bankid-i-dina-tjanster/rp-info) in case the URL has changed. 
 At the time of writing they are 
