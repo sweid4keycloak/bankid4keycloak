@@ -3,7 +3,8 @@ package org.keycloak.broker.bankid.model;
 public class CompletionData {
 	BankidUser user;
 	BankidDevice device;
-	BankidCert cert;
+	String bankIdIssueDate;
+	StepUp stepUp;
 	String signature;
 	String ocspResponse;
 
@@ -23,12 +24,20 @@ public class CompletionData {
 		this.device = device;
 	}
 
-	public BankidCert getCert() {
-		return cert;
+	public String getBankIdIssueDate() {
+		return bankIdIssueDate;
 	}
 
-	public void setCert(BankidCert cert) {
-		this.cert = cert;
+	public void setBankIdIssueDate(String bankIdIssueDate) {
+		this.bankIdIssueDate = bankIdIssueDate;
+	}
+
+	public StepUp getStepUp() {
+		return stepUp;
+	}
+
+	public void setStepUp(StepUp stepUp) {
+		this.stepUp = stepUp;
 	}
 
 	public String getSignature() {

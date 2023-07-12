@@ -6,11 +6,14 @@ import java.util.Map;
 
 import org.apache.http.client.HttpClient;
 import org.jboss.logging.Logger;
+import org.keycloak.broker.bankid.model.AuthRequest;
 import org.keycloak.broker.bankid.model.AuthResponse;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
 import org.keycloak.broker.bankid.model.CollectResponse;
+import org.keycloak.broker.bankid.model.Requirements;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.provider.util.SimpleHttp.Response;
+import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -28,14 +31,15 @@ public class SimpleBankidClient {
 
 	public AuthResponse sendAuth(String personalNumber, String endUserIp) {
 
-		Map<String, String> requestData = new HashMap<>();
-
+		AuthRequest request = new AuthRequest(endUserIp);
+		
 		if (personalNumber != null) {
-			requestData.put("personalNumber", personalNumber);
+			Requirements requirements = new Requirements();
+			requirements.setPersonalNumber(personalNumber);
+			request.setRequirement(requirements);
 		}
-		requestData.put("endUserIp", endUserIp);
 
-		Response response = sendRequest("/rp/v5.1/auth", requestData);
+		Response response = sendRequest("/rp/v6.0/auth", request);
 
 		try {
 			AuthResponse ar = response.asJson(AuthResponse.class);
@@ -51,7 +55,7 @@ public class SimpleBankidClient {
 		Map<String, String> requestData = new HashMap<>();
 		requestData.put("orderRef", orderrRef);
 		try {
-			Response response = sendRequest("/rp/v5.1/collect", requestData);
+			Response response = sendRequest("/rp/v6.0/collect", requestData);
 			CollectResponse responseData = response.asJson(CollectResponse.class);
 			// TODO: Handle when status is failed
 			return responseData;
@@ -65,7 +69,7 @@ public class SimpleBankidClient {
 		Map<String, String> requestData = new HashMap<>();
 		requestData.put("orderRef", orderrRef);
 		try {
-			sendRequest("/rp/v5.1/cancel", requestData);
+			sendRequest("/rp/v6.0/cancel", requestData);
 			return;
 		} catch (Exception e) {
 			logger.warn("Failed cancel BankID auth request " + orderrRef, e);
