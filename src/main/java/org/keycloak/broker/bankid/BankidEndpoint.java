@@ -54,12 +54,12 @@ public class BankidEndpoint {
 	private static final Logger logger = Logger.getLogger(BankidEndpoint.class);
 
 	// The maximum number of minutes to store bankid session info in the token cache
-	// Setting this to 5 since BankID will timeout after 3 minutes 
+	// Setting this to 5 since BankID will timeout after 3 minutes
 	private static long MAX_CACHE_LIFESPAN = 5;
 
-	private Cache<Object, Object> actionTokenCache ;
+	private Cache<Object, Object> actionTokenCache;
 
-       private static String qrCodePrefix = "bankid.";
+	private static String qrCodePrefix = "bankid.";
 
 	@Context
 	protected KeycloakSession session;
@@ -70,10 +70,9 @@ public class BankidEndpoint {
 		this.callback = callback;
 		this.provider = provider;
 		this.bankidClient = new SimpleBankidClient(provider.buildBankidHttpClient(), config.getApiUrl());
-		InfinispanConnectionProvider infinispanConnectionProvider =
-                provider.getSession().getProvider(InfinispanConnectionProvider.class);
-    	this.actionTokenCache =
-            infinispanConnectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
+		InfinispanConnectionProvider infinispanConnectionProvider = provider.getSession()
+				.getProvider(InfinispanConnectionProvider.class);
+		this.actionTokenCache = infinispanConnectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
 	}
 
 	@GET
@@ -87,8 +86,8 @@ public class BankidEndpoint {
 		if (config.isRequiredNin()) {
 			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 			return loginFormsProvider
-				.setAttribute("state", state)
-				.createForm("start-bankid.ftl");
+					.setAttribute("state", state)
+					.createForm("start-bankid.ftl");
 		} else {
 			// Go direct to login if we do not require non.
 			return doLogin(null, state);
@@ -113,7 +112,7 @@ public class BankidEndpoint {
 		try {
 			AuthResponse authResponse;
 			authResponse = bankidClient.sendAuth(nin, session.getContext().getConnection().getRemoteAddr());
-			
+
 			UUID bankidRef = UUID.randomUUID();
 			this.actionTokenCache.put(bankidRef.toString(), authResponse, MAX_CACHE_LIFESPAN, TimeUnit.MINUTES);
 			return loginFormsProvider
@@ -132,12 +131,13 @@ public class BankidEndpoint {
 	@Path("/collect")
 	public Response collect(@QueryParam("bankidref") String bankidRef) {
 		if (!this.actionTokenCache.containsKey(bankidRef) ||
-			!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
 			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 
 		if (this.actionTokenCache.containsKey(bankidRef)) {
+
 			String orderref = ((AuthResponse) this.actionTokenCache.get(bankidRef)).getOrderRef();
 			try {
 				CollectResponse responseData = bankidClient.sendCollect(orderref);
@@ -149,7 +149,7 @@ public class BankidEndpoint {
 							.type(MediaType.APPLICATION_JSON_TYPE).build();
 				} else {
 					if ("complete".equalsIgnoreCase(responseData.getStatus())) {
-						this.actionTokenCache.put(bankidRef, responseData.getCompletionData());
+						this.actionTokenCache.put(bankidRef + "-completion", responseData.getCompletionData());
 					}
 					return Response.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }",
 							responseData.getStatus(), responseData.getHintCode()), MediaType.APPLICATION_JSON_TYPE)
@@ -172,19 +172,20 @@ public class BankidEndpoint {
 	public Response done(@QueryParam("state") String state, @QueryParam("bankidref") String bankidRef) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 
-		if (!this.actionTokenCache.containsKey(bankidRef) ||
-			!(this.actionTokenCache.get(bankidRef) instanceof CompletionData)) {
+		if (!this.actionTokenCache.containsKey(bankidRef + "-completion") ||
+				!(this.actionTokenCache.get(bankidRef + "-completion") instanceof CompletionData)) {
 			logger.error("Action token cache does not have a CompletionData object.");
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 
-		CompletionData completionData = (CompletionData) this.actionTokenCache.get(bankidRef);
+		CompletionData completionData = (CompletionData) this.actionTokenCache.get(bankidRef + "-completion");
 		BankidUser user = completionData.getUser();
 		// Make sure to remove the authresponse attribute from the session
 		try {
 			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
 			session.getContext().setAuthenticationSession(authSession);
-			BrokeredIdentityContext identity = new BrokeredIdentityContext(getConfig().getAlias().concat("." + getUsername(user)));
+			BrokeredIdentityContext identity = new BrokeredIdentityContext(
+					getConfig().getAlias().concat("." + getUsername(user)));
 
 			identity.setIdpConfig(config);
 			identity.setIdp(provider);
@@ -194,10 +195,12 @@ public class BankidEndpoint {
 
 			// Set user session notes
 			authSession.setUserSessionNote(getConfig().getAlias().concat(".pnr"), getUsername(user));
-			authSession.setUserSessionNote(getConfig().getAlias().concat(".cert.notbefore"), completionData.getCert().getNotBefore());
-			authSession.setUserSessionNote(getConfig().getAlias().concat(".cert.notafter"), completionData.getCert().getNotAfter());
-			authSession.setUserSessionNote(getConfig().getAlias().concat(".device.ipaddress"), completionData.getDevice().getIpAddress());
-			authSession.setUserSessionNote(getConfig().getAlias().concat(".ocspresponse"), completionData.getOcspResponse());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".issuedate"),
+					completionData.getBankIdIssueDate());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".device.ipaddress"),
+					completionData.getDevice().getIpAddress());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".ocspresponse"),
+					completionData.getOcspResponse());
 			identity.setAuthenticationSession(authSession);
 
 			return callback.authenticated(identity);
@@ -220,14 +223,14 @@ public class BankidEndpoint {
 	@Path("/cancel")
 	public Response cancel(@QueryParam("bankidref") String bankidRef) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-		
+
 		if (!this.actionTokenCache.containsKey(bankidRef) ||
-			!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 
 		if (!this.actionTokenCache.containsKey(bankidRef) ||
-			!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 
@@ -237,13 +240,13 @@ public class BankidEndpoint {
 			bankidClient.sendCancel(orderRef);
 		}
 		return loginFormsProvider.setError("bankid.hints." + BankidHintCodes.cancelled.messageShortName)
-			.createErrorPage(Status.INTERNAL_SERVER_ERROR);
+				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 	}
 
 	@GET
 	@Path("/error")
 	public Response error(@QueryParam("code") String hintCode) {
-		
+
 		BankidHintCodes hint;
 		// Sanitize input from the web
 		try {
@@ -258,26 +261,27 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/qrcode")
-	public Response qrcode(@QueryParam("bankidref") String bankidRef) {		
+	public Response qrcode(@QueryParam("bankidref") String bankidRef) {
 		if (this.actionTokenCache.containsKey(bankidRef)) {
 			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 			if (!this.actionTokenCache.containsKey(bankidRef) &&
-				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
-				return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
+					!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
+				return loginFormsProvider.setError("bankid.error.internal")
+						.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 			}
-	
+
 			AuthResponse authResponse = (AuthResponse) this.actionTokenCache.get(bankidRef);
-      long elapsedTime = (System.currentTimeMillis() / 1000) - authResponse.getAuthTimestamp();
+			long elapsedTime = (System.currentTimeMillis() / 1000) - authResponse.getAuthTimestamp();
 
-      String qrAuthCode;
-      try {
-        qrAuthCode = generateQrAuthCode(authResponse.getQrStartSecret(), Long.toString(elapsedTime));
-      } catch (Exception e) {
-        logger.error("Failed to generate qrAuthCode");
-        throw new RuntimeException(e);
-      }
+			String qrAuthCode;
+			try {
+				qrAuthCode = generateQrAuthCode(authResponse.getQrStartSecret(), Long.toString(elapsedTime));
+			} catch (Exception e) {
+				logger.error("Failed to generate qrAuthCode");
+				throw new RuntimeException(e);
+			}
 
-      String qrCode = qrCodePrefix + authResponse.getQrStartToken() + "." + elapsedTime + "." + qrAuthCode;
+			String qrCode = qrCodePrefix + authResponse.getQrStartToken() + "." + elapsedTime + "." + qrAuthCode;
 
 			try {
 
@@ -286,7 +290,7 @@ public class BankidEndpoint {
 
 				QRCodeWriter writer = new QRCodeWriter();
 				final BitMatrix bitMatrix = writer.encode(
-            qrCode, BarcodeFormat.QR_CODE, width,
+						qrCode, BarcodeFormat.QR_CODE, width,
 						height);
 
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -294,12 +298,12 @@ public class BankidEndpoint {
 				MatrixToImageWriter.writeToStream(bitMatrix, "png", bos);
 				bos.close();
 
-        CacheControl cc = new CacheControl();
-        cc.setNoStore(true);
+				CacheControl cc = new CacheControl();
+				cc.setNoStore(true);
 
-        ResponseBuilder builder = Response.ok(bos.toByteArray(), "image/png");
-        builder.cacheControl(cc);
-        return builder.build();
+				ResponseBuilder builder = Response.ok(bos.toByteArray(), "image/png");
+				builder.cacheControl(cc);
+				return builder.build();
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -311,10 +315,11 @@ public class BankidEndpoint {
 		return config;
 	}
 
-  private String generateQrAuthCode(String qrStartSecret, String time) throws InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
-    Mac mac = Mac.getInstance("HmacSHA256");
-    mac.init(new SecretKeySpec(qrStartSecret.getBytes("ascii"), "HmacSHA256"));
+	private String generateQrAuthCode(String qrStartSecret, String time)
+			throws InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
+		Mac mac = Mac.getInstance("HmacSHA256");
+		mac.init(new SecretKeySpec(qrStartSecret.getBytes("ascii"), "HmacSHA256"));
 
-    return String.format("%064x", new BigInteger(1, mac.doFinal(new String(time).getBytes())));
-  }
+		return String.format("%064x", new BigInteger(1, mac.doFinal(new String(time).getBytes())));
+	}
 }
