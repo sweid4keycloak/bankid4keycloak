@@ -8,7 +8,6 @@ import jakarta.ws.rs.core.Response;
 import org.apache.http.client.HttpClient;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
-import org.keycloak.broker.social.SocialIdentityProvider;
 import org.keycloak.connections.httpclient.HttpClientBuilder;
 import org.keycloak.connections.httpclient.ProxyMappings;
 import org.keycloak.events.EventBuilder;
@@ -16,7 +15,7 @@ import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
-public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdentityProviderConfig> implements SocialIdentityProvider<BankidIdentityProviderConfig> {
+public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdentityProviderConfig> {
 
 	public BankidIdentityProvider(KeycloakSession session, BankidIdentityProviderConfig config) {
 		super(session, config);

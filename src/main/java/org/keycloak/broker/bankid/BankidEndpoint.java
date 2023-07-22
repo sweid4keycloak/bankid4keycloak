@@ -61,9 +61,6 @@ public class BankidEndpoint {
 
 	private static String qrCodePrefix = "bankid.";
 
-	@Context
-	protected KeycloakSession session;
-
 	public BankidEndpoint(BankidIdentityProvider provider, BankidIdentityProviderConfig config,
 			AuthenticationCallback callback) {
 		this.config = config;
@@ -111,7 +108,7 @@ public class BankidEndpoint {
 
 		try {
 			AuthResponse authResponse;
-			authResponse = bankidClient.sendAuth(nin, session.getContext().getConnection().getRemoteAddr());
+			authResponse = bankidClient.sendAuth(nin, provider.getSession().getContext().getConnection().getRemoteAddr());
 
 			UUID bankidRef = UUID.randomUUID();
 			this.actionTokenCache.put(bankidRef.toString(), authResponse, MAX_CACHE_LIFESPAN, TimeUnit.MINUTES);
@@ -183,7 +180,7 @@ public class BankidEndpoint {
 		// Make sure to remove the authresponse attribute from the session
 		try {
 			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
-			session.getContext().setAuthenticationSession(authSession);
+			provider.getSession().getContext().setAuthenticationSession(authSession);
 			BrokeredIdentityContext identity = new BrokeredIdentityContext(
 					getConfig().getAlias().concat("." + getUsername(user)));
 
