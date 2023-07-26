@@ -29,9 +29,16 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 	@Override
 	public Response performLogin(AuthenticationRequest request) {
 		try {
-			return Response.status(302)
-					.location(new URI(request.getRedirectUri() + "/start?state=" + request.getState().getEncoded()))
-					.build();
+			if(this.getConfig().isJsonResponse()) {
+				return Response.status(302)
+						.location(new URI(request.getRedirectUri() + "/loginx?state=" + request.getState().getEncoded()))
+						.build();	
+			} else {
+				return Response.status(302)
+						.location(new URI(request.getRedirectUri() + "/start?state=" + request.getState().getEncoded()))
+						.build();
+			}
+				
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException();
 		}

@@ -175,6 +175,14 @@
                 <kc-tooltip>{{:: 'bankid.bankid_save_nin_hash.tooltip' | translate}}</kc-tooltip>
             </div>
             
+            <div class="form-group clearfix">
+                <label class="col-md-2 control-label" for="bankid_save_nin_hash">{{:: 'bankid.bankid_use_json_response' | translate}}</label>
+                <div class="col-md-6">
+                    <input ng-model="identityProvider.config.bankid_use_json_response" name="identityProvider.config.bankid_use_json_response" id="bankid_use_json_response" data-ng-readonly="!newIdentityProvider" onoffswitchvalue on-text="{{:: 'onText' | translate}}" off-text="{{:: 'offText' | translate}}" />
+                </div>
+                <kc-tooltip>{{:: 'bankid.bankid_use_json_response.tooltip' | translate}}</kc-tooltip>
+            </div>
+            
          </fieldset>
 
 	<!-- STOP HERE -->

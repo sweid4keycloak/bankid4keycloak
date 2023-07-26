@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  keycloak:
+    image: ${CONTAINER_REGISTRY:-localhost}/alf-bankid6-keycloak:${VERSION:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile 

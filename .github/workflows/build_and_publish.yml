@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - master
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  workflow_dispatch:
+        branches:
+            - 'master'
 
 jobs:
   build:
@@ -14,7 +14,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checking out repository code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.APP_PRIVATE_KEY }}
+
+
+    - name : Conventional Changelog Action
+      id : changelog
+      uses: TriPSs/conventional-changelog-action@v3
+      with:
+          github-token: ${{ secrets.APP_PRIVATE_KEY }} 
+          git-user-name: ${{github.actor}} 
+          skip-on-empty: false
+        
+    - name: Create Release # This action will create the actual release
+      if: ${{ steps.changelog.outputs.skipped == 'false' }}  
+      uses: actions/create-release@v1 
+      env:
+        GITHUB_TOKEN: ${{ secrets.APP_PRIVATE_KEY }}  
+      with:
+        tag_name: ${{ steps.changelog.outputs.tag }}
+        release_name: ${{ steps.changelog.outputs.tag }}
+        body: ${{ steps.changelog.outputs.clean_changelog }}
     - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
@@ -23,22 +45,24 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn clean install
 
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy
-      env:
-        GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
-
-    - name: Log into registry ${{ env.REGISTRY }}
-      if: github.event_name != 'pull_request'
-      uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+    # - name: Publish to GitHub Packages Apache Maven
+    #   run: mvn deploy
+    #   env:
+    #     GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+    - name: Logging in to Azure Container Registry
+      uses: azure/docker-login@v1
       with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Build and Push the Docker image
+        login-server: ${{vars.ACR_SERVER}}
+        username: ${{vars.ACR_USERNAME}}
+        password: ${{secrets.ACR_PASSWORD}}
+   
+    - name: Build and push images
       run: |
-        docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${GITHUB_REF##*/}
-        docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          export VERSION=${{steps.changelog.outputs.tag}}
+          export CONTAINER_REGISTRY=${{vars.ACR_SERVER}}
+          docker compose -f docker-compose.yml build
+          docker compose -f docker-compose.yml push
+
+   

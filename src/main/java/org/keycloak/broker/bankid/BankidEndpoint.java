@@ -105,7 +105,39 @@ public class BankidEndpoint {
 	public Response loginGet(@QueryParam("state") String state) {
 		return doLogin(null, state);
 	}
-
+	@GET
+	@Path("/loginx")
+	public Response loginNewGet(@QueryParam("nin") String nin, @QueryParam("state") String state) {
+		return doLoginNew(nin, state);
+	}
+	private Response doLoginNew(String nin, String state) {
+		try {
+			
+		 
+		UUID bankidRef = UUID.randomUUID();
+		AuthResponse authResponse;  
+		authResponse = bankidClient.sendAuth(nin, session.getContext().getConnection().getRemoteAddr()); 
+		this.actionTokenCache.put(bankidRef.toString(), authResponse, MAX_CACHE_LIFESPAN, TimeUnit.MINUTES); 
+		 
+		return Response.ok(
+				String.format("{ \"bankidref\": \"%s\", \"state\": \"%s\", \"autoStartToken\": \"%s\", \"showqr\": \"%s\", \"qrStartToken\": \"%s\" , \"qrStartSecret\": \"%s\"  }",
+						bankidRef.toString(), 
+						state,
+						authResponse.getAutoStartToken(),
+						config.isShowQRCode(),
+						authResponse.getQrStartToken(),
+						authResponse.getQrStartSecret()
+				)
+				 , MediaType.APPLICATION_JSON_TYPE)
+				.build();
+		} catch (BankidClientException e) {
+			return Response
+					.status(Status.INTERNAL_SERVER_ERROR).entity(String
+							.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", "failed", e.getHintCode()))
+					.type(MediaType.APPLICATION_JSON_TYPE).build();
+		}
+		
+	}
 	private Response doLogin(String nin, String state) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
 
@@ -132,8 +164,11 @@ public class BankidEndpoint {
 	public Response collect(@QueryParam("bankidref") String bankidRef) {
 		if (!this.actionTokenCache.containsKey(bankidRef) ||
 				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
-			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
+			return Response
+					.status(Status.INTERNAL_SERVER_ERROR).entity(String
+							.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", "failed", "Invalid BankId Reference"))
+					.type(MediaType.APPLICATION_JSON_TYPE).build();
+			 
 		}
 
 		if (this.actionTokenCache.containsKey(bankidRef)) {
@@ -208,7 +243,55 @@ public class BankidEndpoint {
 			throw new RuntimeException("Failed to decode user information.", e);
 		}
 	}
+    
 
+	@GET
+	@Path("/complete")
+	public Response complete(@QueryParam("state") String state, @QueryParam("bankidref") String bankidRef) {
+		if (!this.actionTokenCache.containsKey(bankidRef + "-completion") ||
+				!(this.actionTokenCache.get(bankidRef + "-completion") instanceof CompletionData)) {
+			logger.error("Action token cache does not have a CompletionData object.");
+			return Response
+					.status(Status.INTERNAL_SERVER_ERROR).entity(String
+							.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", "failed", "Action token cache does not have a CompletionData object."))
+					.type(MediaType.APPLICATION_JSON_TYPE).build(); 
+		} 
+		CompletionData completionData = (CompletionData) this.actionTokenCache.get(bankidRef + "-completion");
+		BankidUser user = completionData.getUser();
+		// Make sure to remove the authresponse attribute from the session
+		try {
+			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
+			session.getContext().setAuthenticationSession(authSession);
+			BrokeredIdentityContext identity = new BrokeredIdentityContext(
+					getConfig().getAlias().concat("." + getUsername(user)));
+
+			identity.setIdpConfig(config);
+			identity.setIdp(provider);
+			identity.setUsername(getUsername(user));
+			identity.setFirstName(user.getGivenName());
+			identity.setLastName(user.getSurname());
+
+			// Set user session notes
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".pnr"), getUsername(user));
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".issuedate"),
+					completionData.getBankIdIssueDate());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".device.ipaddress"),
+					completionData.getDevice().getIpAddress());
+			authSession.setUserSessionNote(getConfig().getAlias().concat(".ocspresponse"),
+					completionData.getOcspResponse());
+			identity.setAuthenticationSession(authSession);
+
+			return callback.authenticated(identity);
+		} catch (Exception e) {
+			return Response
+					.status(Status.INTERNAL_SERVER_ERROR).entity(String
+							.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", "failed", "Failed to decode user information. " + e.toString()))
+					.type(MediaType.APPLICATION_JSON_TYPE).build();
+		} 
+
+		 
+	}
+    
 	private String getUsername(BankidUser user) throws NoSuchAlgorithmException {
 		if (this.config.isSaveNinHashed()) {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
