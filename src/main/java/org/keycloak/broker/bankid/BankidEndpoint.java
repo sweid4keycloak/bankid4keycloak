@@ -152,7 +152,7 @@ public class BankidEndpoint {
 					.setAttribute("state", state)
 					.setAttribute("autoStartToken", authResponse.getAutoStartToken())
 					.setAttribute("showqr", config.isShowQRCode()).setAttribute("ninRequired", config.isRequiredNin())
-					.createForm("login-bankid.ftl");
+					.createForm("login-bankid-new.ftl");
 		} catch (BankidClientException e) {
 			return loginFormsProvider.setError("bankid.hints." + e.getHintCode().messageShortName)
 					.createErrorPage(Status.INTERNAL_SERVER_ERROR);
