@@ -100,8 +100,8 @@
    
     <section class="section-footer">
         <span class="text-normal">Or</span>
-        <Button type="button" onclick="" class="bankId-login-button">
-            <span class="sign-in-btn-text" onclick="handleClick()">Open BankId on this device</span>
+        <Button type="button" onclick="handleClick()" class="bankId-login-button">
+            <span class="sign-in-btn-text">Open BankId on this device</span>
         </Button>
         <Button class="cancel-btn" type="button">
             <span class="text-normal">cancel</span> 
