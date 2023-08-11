@@ -33,7 +33,8 @@
     };
      function handleClick(){
             console.log('Logging in...')
-            location.href = "bankid:///?autostarttoken=${autoStartToken}&redirect=null";
+            // TODO need to check how to get redirecturl 
+            location.href = " https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=alfappDebug://";
         }
 	poll(
 	    function() {
