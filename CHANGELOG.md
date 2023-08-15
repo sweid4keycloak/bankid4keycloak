@@ -1,3 +1,7 @@
+## [1.0.7](https://github.com/lf-trygghetstjanster/bankid4keycloak6/compare/v1.0.6...v1.0.7) (2023-08-15)
+
+
+
 ## [1.0.6](https://github.com/lf-trygghetstjanster/bankid4keycloak6/compare/v1.0.5...v1.0.6) (2023-08-15)
 
 
@@ -11,10 +15,6 @@
 
 
 ## [1.0.3](https://github.com/lf-trygghetstjanster/bankid4keycloak6/compare/v1.0.2...v1.0.3) (2023-08-08)
-
-
-
-## [1.0.2](https://github.com/lf-trygghetstjanster/bankid4keycloak6/compare/v1.0.1...v1.0.2) (2023-07-26)
 
 
 
