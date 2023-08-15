@@ -21,7 +21,7 @@ public class SPARAuthenticator implements Authenticator {
         String urlOfUserService = getUserServiceUrl(context);
         logger.error(user.getUsername());
         logger.error(user.getId());
-
+        //user.getFirstAttribute(SPAR_CALL_USER_ATTRIBUTE) 
         logger.error(urlOfUserService);
         // TODO
        /*   call user Service and 

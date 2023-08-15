@@ -3,8 +3,9 @@ package org.keycloak.lf.sparauthenticator;
 
 import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 
-import java.util.Collections;
+ 
 import java.util.List;
+import static java.util.Arrays.asList;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
@@ -15,10 +16,11 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 
 public class SparAuthenticatorFactory implements AuthenticatorFactory {
-	 public static final String ID = "ipauthenticator";
+	 public static final String ID = "sparauthenticator";
 
 	    private static final Authenticator AUTHENTICATOR_INSTANCE = new SPARAuthenticator();
 	    static final String USER_SERVICE_URL = "user_service_url";
+	    static final String USER_SERVICE_API_KEY = "user_service_api_key";
 
 	    @Override
 	    public Authenticator create(KeycloakSession keycloakSession) {
@@ -62,12 +64,11 @@ public class SparAuthenticatorFactory implements AuthenticatorFactory {
 	        ProviderConfigProperty apiKey = new ProviderConfigProperty();
 
 	        apiKey.setType(STRING_TYPE);
-	        apiKey.setName(USER_SERVICE_URL);
+	        apiKey.setName(USER_SERVICE_API_KEY);
 	        apiKey.setLabel("API Key of User Service");
 	        apiKey.setHelpText("User Service API endpoint API Key, that will pull the user information from SPAR");
-	        List<ProviderConfigProperty> conficCollection = Collections.singletonList(userServiceSparCallEndPoint);
-	        conficCollection.add(apiKey);
-	        return conficCollection;
+	        
+	        return asList(userServiceSparCallEndPoint,apiKey);
 	    }
 
 	    @Override
