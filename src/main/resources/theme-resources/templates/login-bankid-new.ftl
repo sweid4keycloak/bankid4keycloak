@@ -32,9 +32,8 @@
       position: 'absolute' // Element positioning
     };
      function handleClick(){
-            console.log('Logging in...')
-            // TODO need to check how to get redirecturl 
-            location.href = " https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=alfappDebug://";
+           
+            location.href = " https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${redirect_uri}";
         }
 	poll(
 	    function() {

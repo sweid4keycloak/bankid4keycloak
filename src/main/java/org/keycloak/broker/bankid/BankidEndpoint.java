@@ -144,13 +144,14 @@ public class BankidEndpoint {
 		try {
 			AuthResponse authResponse;
 			authResponse = bankidClient.sendAuth(nin, session.getContext().getConnection().getRemoteAddr());
-
+			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state); 
 			UUID bankidRef = UUID.randomUUID();
 			this.actionTokenCache.put(bankidRef.toString(), authResponse, MAX_CACHE_LIFESPAN, TimeUnit.MINUTES);
 			return loginFormsProvider
 					.setAttribute("bankidref", bankidRef.toString())
 					.setAttribute("state", state)
 					.setAttribute("autoStartToken", authResponse.getAutoStartToken())
+					.setAttribute("redirect_uri", authSession.getRedirectUri())
 					.setAttribute("showqr", config.isShowQRCode()).setAttribute("ninRequired", config.isRequiredNin())
 					.createForm("login-bankid-new.ftl");
 		} catch (BankidClientException e) {
