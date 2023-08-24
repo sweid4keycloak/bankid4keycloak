@@ -12,8 +12,7 @@ variables:
   dockerRegistryServiceConnection: 'alf-azure-container-svc-con'
   imageRepository: 'auth/alf-bankid6-keycloak'
   containerRegistry: 'alfprivatecontainerregistry.azurecr.io'
-  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
-  tag: '$(Build.BuildId)'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile' 
   vmImageName: 'ubuntu-latest'
  
  
@@ -32,10 +31,8 @@ stages:
           echo $PATH
           export MAVEN_HOME=/opt/maven
           export PATH=$MAVEN_HOME/bin:$PATH 
-          $AppVersion = git describe --match "v*" master
-          $tag = git describe --match "v*" master
-          echo  $(AppVersion)
-          echo  $(tag)
+          TAG=$(git describe --match "v*" master)
+          echo "Tag: $TAG"
           java -version
           mvn -version
           mvn package
@@ -49,4 +46,4 @@ stages:
           dockerfile: $(dockerfilePath)
           containerRegistry: $(dockerRegistryServiceConnection)
           tags: |
-            $(tag)
+            $(TAG)
