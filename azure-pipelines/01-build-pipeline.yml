@@ -32,30 +32,14 @@ stages:
           echo $PATH
           export MAVEN_HOME=/opt/maven
           export PATH=$MAVEN_HOME/bin:$PATH
+          $TagArray= git tag -l v*
+          $AppVersion = $TagArray[$TagArray.Count – 1]
+          echo  $AppVersion
           java -version
           mvn -version
           mvn package
         displayName: 'Build with Maven'
-      - task: GitHubRelease@1
-        inputs:
-          gitHubConnection: 'lf-trygghetstjanster'
-          repositoryName: '$(Build.Repository.Name)'
-          action: 'create'
-          target: '$(Build.SourceVersion)'
-          tagSource: 'gitTag'
-          tagPattern: 'v1'
-          changeLogCompareToRelease: 'lastFullRelease'
-          changeLogType: 'commitBased'
-      # - task: Maven@3
-      #   inputs:
-      #     mavenPomFile: 'pom.xml'
-      #     mavenOptions: '-Xmx3072m'
-      #     javaHomeOption: 'JDKVersion'
-      #     jdkVersionOption: '1.8'
-      #     jdkArchitectureOption: 'x64'
-      #     publishJUnitResults: true
-      #     testResultsFiles: '**/surefire-reports/TEST-*.xml'
-      #     goals: 'package'
+      
       - task: Docker@2
         displayName: Build and push an image to container registry
         inputs:
