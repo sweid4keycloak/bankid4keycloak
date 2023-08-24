@@ -14,9 +14,9 @@ variables:
   containerRegistry: 'alfprivatecontainerregistry.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
-  
+  vmImageName: 'ubuntu-latest'
  
-pool: Default
+ 
    
 stages:
 - stage: Build
@@ -24,7 +24,8 @@ stages:
   jobs:  
   - job: Build
     displayName: Build
-    pool: Default
+    pool:
+      vmImage: $(vmImageName)
     steps:
       - task: Maven@3
         inputs:
