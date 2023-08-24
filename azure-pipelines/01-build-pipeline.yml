@@ -14,7 +14,7 @@ variables:
   containerRegistry: 'alfprivatecontainerregistry.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile' 
   vmImageName: 'ubuntu-latest'
-  TAG: 'test'
+  TAG: $(git tag -l --sort=-v:refname | head -n 1)
  
  
    
