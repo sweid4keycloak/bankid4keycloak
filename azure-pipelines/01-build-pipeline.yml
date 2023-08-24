@@ -31,7 +31,7 @@ stages:
           export PATH=$MAVEN_HOME/bin:$PATH  
           GIT_LATEST_TAG=$(git tag -l --sort=-v:refname | head -n 1) 
           ceho "##vso[task.setvariable variable=GIT_LATEST_TAG]$GIT_LATEST_TAG"
-          echo "Latest Tag: GIT_LATEST_TAG" 
+          echo "Latest Tag: $GIT_LATEST_TAG" 
           java -version
           mvn -version
           mvn package
