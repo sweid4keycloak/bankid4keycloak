@@ -31,10 +31,11 @@ stages:
           echo Starting the build
           echo $PATH
           export MAVEN_HOME=/opt/maven
-          export PATH=$MAVEN_HOME/bin:$PATH
-          $TagArray= git tag -l v*
-          $AppVersion = $TagArray[$TagArray.Count – 1]
-          echo  $AppVersion
+          export PATH=$MAVEN_HOME/bin:$PATH 
+          $AppVersion = git describe --match "v*" master
+          $tag = git describe --match "v*" master
+          echo  $(AppVersion)
+          echo  $(tag)
           java -version
           mvn -version
           mvn package
