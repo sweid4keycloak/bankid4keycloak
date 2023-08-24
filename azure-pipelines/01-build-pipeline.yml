@@ -43,7 +43,7 @@ stages:
           action: 'create'
           target: '$(Build.SourceVersion)'
           tagSource: 'gitTag'
-          tagPattern: ''
+          tagPattern: 'v1'
           changeLogCompareToRelease: 'lastFullRelease'
           changeLogType: 'commitBased'
       # - task: Maven@3
