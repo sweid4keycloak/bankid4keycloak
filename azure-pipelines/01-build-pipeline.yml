@@ -30,6 +30,9 @@ stages:
       - script: |
           echo Starting the build
           echo $PATH
+          export MAVEN_HOME=/opt/maven
+          export PATH=$MAVEN_HOME/bin:$PATH
+          java -version
           mvn -version
           mvn package
         displayName: 'Build with Maven'
