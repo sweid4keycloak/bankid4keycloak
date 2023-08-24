@@ -14,6 +14,7 @@ variables:
   containerRegistry: 'alfprivatecontainerregistry.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile' 
   vmImageName: 'ubuntu-latest'
+  TAG: 'test'
  
  
    
@@ -34,6 +35,7 @@ stages:
           export PATH=$MAVEN_HOME/bin:$PATH 
           git tag -l
           TAG=$(git tag -l --sort=-v:refname | head -n 1)
+          echo "Latest Tag: $TAG" 
           java -version
           mvn -version
           mvn package
