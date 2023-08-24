@@ -32,6 +32,7 @@ stages:
           echo $PATH
           export MAVEN_HOME=/opt/maven
           export PATH=$MAVEN_HOME/bin:$PATH 
+          git tag -l
           TAG=$(git describe --match "v*" master)
           echo "Tag: $TAG"
           java -version
