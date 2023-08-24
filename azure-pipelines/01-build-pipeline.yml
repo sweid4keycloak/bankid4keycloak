@@ -36,6 +36,16 @@ stages:
           mvn -version
           mvn package
         displayName: 'Build with Maven'
+      - task: GitHubRelease@1
+        inputs:
+          gitHubConnection: 'lf-trygghetstjanster'
+          repositoryName: '$(Build.Repository.Name)'
+          action: 'create'
+          target: '$(Build.SourceVersion)'
+          tagSource: 'gitTag'
+          tagPattern: ''
+          changeLogCompareToRelease: 'lastFullRelease'
+          changeLogType: 'commitBased'
       # - task: Maven@3
       #   inputs:
       #     mavenPomFile: 'pom.xml'
