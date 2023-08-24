@@ -3,7 +3,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- master
+- none
 
 resources:
 - repo: self
@@ -26,6 +26,7 @@ stages:
     pool: Default
      # vmImage: $(vmImageName)
     steps:
+      - checkout: self
       - script: |
           echo Starting the build
           echo $PATH
