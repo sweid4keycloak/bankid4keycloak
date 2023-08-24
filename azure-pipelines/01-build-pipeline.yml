@@ -13,10 +13,7 @@ variables:
   imageRepository: 'auth/alf-bankid6-keycloak'
   containerRegistry: 'alfprivatecontainerregistry.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile' 
-  vmImageName: 'ubuntu-latest'
-  TAG: $(git tag -l --sort=-v:refname | head -n 1)
- 
- 
+  vmImageName: 'ubuntu-latest' 
    
 stages:
 - stage: Build
@@ -29,18 +26,16 @@ stages:
     steps:
       - checkout: self
       - script: |
-          echo Starting the build
-          echo $PATH
+          echo Starting the build 
           export MAVEN_HOME=/opt/maven
-          export PATH=$MAVEN_HOME/bin:$PATH 
-          git tag -l
-          TAG=$(git tag -l --sort=-v:refname | head -n 1)
-          echo "Latest Tag: $TAG" 
+          export PATH=$MAVEN_HOME/bin:$PATH  
+          GIT_LATEST_TAG=$(git tag -l --sort=-v:refname | head -n 1) 
+          ceho "##vso[task.setvariable variable=GIT_LATEST_TAG]$GIT_LATEST_TAG"
+          echo "Latest Tag: GIT_LATEST_TAG" 
           java -version
           mvn -version
           mvn package
-        displayName: 'Build with Maven'
-      
+        displayName: 'Build with Maven' 
       - task: Docker@2
         displayName: Build and push an image to container registry
         inputs:
@@ -49,4 +44,4 @@ stages:
           dockerfile: $(dockerfilePath)
           containerRegistry: $(dockerRegistryServiceConnection)
           tags: |
-            $(TAG)
+            $(GIT_LATEST_TAG)
