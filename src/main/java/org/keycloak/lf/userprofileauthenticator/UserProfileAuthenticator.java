@@ -1,6 +1,5 @@
 package org.keycloak.lf.userprofileauthenticator;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.apache.http.client.HttpClient;
@@ -13,7 +12,6 @@ import org.keycloak.lf.userprofileauthenticator.client.UserServiceClient;
 import org.keycloak.lf.userprofileauthenticator.client.UserServiceClientException;
 import org.keycloak.lf.userprofileauthenticator.model.UserRequest;
 import org.keycloak.lf.userprofileauthenticator.model.UserResponse;
-import org.keycloak.lf.userprofileauthenticator.model.UserServiceHindCodes;
 import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
