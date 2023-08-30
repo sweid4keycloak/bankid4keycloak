@@ -15,4 +15,4 @@
 # limitations under the License.
 #
 
-org.keycloak.lf.sparauthenticator.SparAuthenticatorFactory
+org.keycloak.lf.userprofileauthenticator.UserProfileAuthenticatorFactory

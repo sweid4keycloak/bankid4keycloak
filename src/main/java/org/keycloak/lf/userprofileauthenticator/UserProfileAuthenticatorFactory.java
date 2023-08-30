@@ -1,24 +1,22 @@
-package org.keycloak.lf.sparauthenticator;
+package org.keycloak.lf.userprofileauthenticator;
 
-
+import static java.util.Arrays.asList;
 import static org.keycloak.provider.ProviderConfigProperty.STRING_TYPE;
 
- 
 import java.util.List;
-import static java.util.Arrays.asList;
 
 import org.keycloak.Config;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.authentication.AuthenticatorFactory;
+import org.keycloak.authentication.AuthenticatorFactory; 
 import org.keycloak.models.AuthenticationExecutionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.provider.ProviderConfigProperty;
 
-public class SparAuthenticatorFactory implements AuthenticatorFactory {
-	 public static final String ID = "sparauthenticator";
+public class UserProfileAuthenticatorFactory  implements AuthenticatorFactory {
+	 public static final String ID = "UserProfileAuthenticator";
 
-	    private static final Authenticator AUTHENTICATOR_INSTANCE = new SPARAuthenticator();
+	    private static final Authenticator AUTHENTICATOR_INSTANCE = new UserProfileAuthenticator();
 	    static final String USER_SERVICE_URL = "user_service_url";
 	    static final String USER_SERVICE_API_KEY = "user_service_api_key";
 
@@ -29,7 +27,7 @@ public class SparAuthenticatorFactory implements AuthenticatorFactory {
 
 	    @Override
 	    public String getDisplayType() {
-	        return "SPAR Authenticator";
+	        return "User Profile Authenticator";
 	    }
 
 	    @Override

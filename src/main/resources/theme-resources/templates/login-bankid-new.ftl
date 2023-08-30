@@ -35,6 +35,11 @@
            
             location.href = " https://app.bankid.com/?autostarttoken=${autoStartToken}&redirect=${redirect_uri}";
         }
+	   function handleClose () {
+	      window.opener = self;
+          window.close()
+          //javascript:window.close('','_parent','');
+	   }
 	poll(
 	    function() {
 	    
@@ -103,7 +108,7 @@
         <Button type="button" onclick="handleClick()" class="bankId-login-button">
             <span class="sign-in-btn-text">Open BankId on this device</span>
         </Button>
-        <Button class="cancel-btn" type="button">
+        <Button class="cancel-btn" type="button" onclick="handleClose()" >
             <span class="text-normal">cancel</span> 
         </Button>
     </section>
