@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.client.HttpClient;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
@@ -58,6 +59,15 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 		}
 
 		return ProxyMappings.withFixedProxyMapping(httpsProxy, noProxy);
+	}
+
+	public UriBuilder redirectUriBuilder() {
+		return session.getContext().getUri().getBaseUriBuilder()
+			.path("realms")
+			.path(session.getContext().getRealm().getId())
+			.path("broker")
+			.path(getConfig().getAlias())
+			.path("endpoint");
 	}
 
 	public HttpClient buildBankidHttpClient() {
