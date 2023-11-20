@@ -1,12 +1,7 @@
 package org.keycloak.broker.bankid;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
 import org.apache.http.client.HttpClient;
+import org.keycloak.broker.bankid.model.BankidLoginFlow;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.connections.httpclient.HttpClientBuilder;
@@ -16,7 +11,14 @@ import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdentityProviderConfig> {
+
+	private static final String BANKID_LOGIN_FLOW_PARAMETER_NAME = "client_request_param_bankid_login_flow";
 
 	public BankidIdentityProvider(KeycloakSession session, BankidIdentityProviderConfig config) {
 		super(session, config);
@@ -30,8 +32,9 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 	@Override
 	public Response performLogin(AuthenticationRequest request) {
 		try {
+			String path = (getLoginFlow(request) == BankidLoginFlow.api) ? "/api/start" : "/start";
 			return Response.status(302)
-					.location(new URI(request.getRedirectUri() + "/start?state=" + request.getState().getEncoded()))
+					.location(new URI(request.getRedirectUri() + path + "?state=" + request.getState().getEncoded()))
 					.build();
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException();
@@ -82,4 +85,8 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 		}
 	}
 
+	private BankidLoginFlow getLoginFlow(AuthenticationRequest request) {
+		String bankidLoginFlowQueryString = request.getAuthenticationSession().getClientNote(BANKID_LOGIN_FLOW_PARAMETER_NAME);
+		return BankidLoginFlow.valueOfOrDefault(bankidLoginFlowQueryString, BankidLoginFlow.webview);
+	}
 }
