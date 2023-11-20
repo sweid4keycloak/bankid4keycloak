@@ -120,15 +120,15 @@ public class BankidEndpoint {
 				.build();
 
             return Response.ok(String.format("{ \"pollingUrl\": \"%s\", \"cancelUrl\": \"%s\", \"autostarttoken\": \"%s\" }",
-                            pollingUri,
-                            cancelUri,
-                            authResponse.getAutoStartToken()),
-                    MediaType.APPLICATION_JSON_TYPE).build();
+                    pollingUri, cancelUri, authResponse.getAutoStartToken()),
+                MediaType.APPLICATION_JSON_TYPE).build();
 
         } catch (BankidClientException e) {
+			BankidHintCodes hintCode = e.getHintCode();
             return Response
 				.status(Status.INTERNAL_SERVER_ERROR).entity(String
-						.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", "failed", e.getHintCode()))
+                    .format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"messageShortName\": \"%s\" }",
+                            "failed", hintCode, hintCode.messageShortName))
 				.type(MediaType.APPLICATION_JSON_TYPE).build();
         }
     }
@@ -201,12 +201,12 @@ public class BankidEndpoint {
 
     @GET
     @Path("/api/collect")
-    public Response apiCollect(@QueryParam("bankidref") String bankidRef, @QueryParam("state") String state) {
+    public Response apiCollect(@QueryParam("state") String state, @QueryParam("bankidref") String bankidRef) {
         if (!this.actionTokenCache.containsKey(bankidRef) ||
                 !(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
             return Response
                     .status(Status.INTERNAL_SERVER_ERROR).entity(String
-                            .format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"completionUrl\": null }", "500", "bankid.error.internal"))
+                            .format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"messageShortName\": null, \"completionUrl\": null }", "500", "bankid.error.internal"))
                     .type(MediaType.APPLICATION_JSON_TYPE).build();
         }
 
@@ -214,9 +214,10 @@ public class BankidEndpoint {
         try {
             CollectResponse responseData = bankidClient.sendCollect(orderref);
             if ("failed".equalsIgnoreCase(responseData.getStatus())) {
+				BankidHintCodes hintCode = BankidHintCodes.valueOf(responseData.getHintCode());
                 return Response.status(Status.INTERNAL_SERVER_ERROR)
-                        .entity(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"completionUrl\": null }",
-                                responseData.getStatus(), responseData.getHintCode()))
+                        .entity(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"messageShortName\": \"%s\", \"completionUrl\": null }",
+                                responseData.getStatus(), hintCode, hintCode.messageShortName))
                         .type(MediaType.APPLICATION_JSON_TYPE).build();
             } else {
                 if ("complete".equalsIgnoreCase(responseData.getStatus())) {
@@ -227,19 +228,21 @@ public class BankidEndpoint {
 						.queryParam("state", state)
 					.build();
 
-					return Response.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"completionUrl\": \"%s\" }",
-									responseData.getStatus(), responseData.getHintCode(), completionUrl), MediaType.APPLICATION_JSON_TYPE)
+					return Response.ok(String.format("{ \"status\": \"%s\", \"hintCode\": null, \"messageShortName\": null, \"completionUrl\": \"%s\" }",
+									responseData.getStatus(), completionUrl), MediaType.APPLICATION_JSON_TYPE)
 							.build();
                 } else {
-					return Response.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"completionUrl\": null }",
-							responseData.getStatus(), responseData.getHintCode()), MediaType.APPLICATION_JSON_TYPE)
+					BankidHintCodes hintCode = BankidHintCodes.valueOf(responseData.getHintCode());
+					return Response.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"messageShortName\": \"%s\", \"completionUrl\": null }",
+							responseData.getStatus(), hintCode, hintCode.messageShortName), MediaType.APPLICATION_JSON_TYPE)
 						.build();
 				}
             }
         } catch (BankidClientException e) {
+			BankidHintCodes hintCode = e.getHintCode();
             return Response
 				.status(Status.INTERNAL_SERVER_ERROR).entity(String
-						.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"completionUrl\": null }", "failed", e.getHintCode()))
+						.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"messageShortName\": \"%s\", \"completionUrl\": null }", "failed", hintCode, hintCode.messageShortName))
 				.type(MediaType.APPLICATION_JSON_TYPE).build();
         }
     }
@@ -348,7 +351,7 @@ public class BankidEndpoint {
 				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
 			return Response
 				.status(Status.INTERNAL_SERVER_ERROR).entity(String
-						.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", "500", "bankid.error.internal"))
+						.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"messageShortName\": null, }", "500", "bankid.error.internal"))
 				.type(MediaType.APPLICATION_JSON_TYPE).build();
 		}
 
@@ -359,8 +362,8 @@ public class BankidEndpoint {
 		}
 
 		return Response
-			.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\" }", "cancelled",
-					BankidHintCodes.cancelled.messageShortName))
+			.ok(String.format("{ \"status\": \"%s\", \"hintCode\": \"%s\", \"messageShortName\": \"%s\" }", "cancelled",
+					BankidHintCodes.cancelled, BankidHintCodes.cancelled.messageShortName))
 			.type(MediaType.APPLICATION_JSON_TYPE).build();
 	}
 
