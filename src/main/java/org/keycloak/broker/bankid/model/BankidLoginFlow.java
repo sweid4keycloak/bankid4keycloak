@@ -7,7 +7,7 @@ public enum BankidLoginFlow {
     public static BankidLoginFlow valueOfOrDefault(String s, BankidLoginFlow defaultValue) {
         try {
             return BankidLoginFlow.valueOf(s);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return defaultValue;
         }
     }
