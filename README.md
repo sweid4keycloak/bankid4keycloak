@@ -87,3 +87,54 @@ Full path to the truststore file.
 Password for the PKCS12 container.  
 *example*  
 `qwerty123`
+
+## Auth flows
+The plugin supports login flows based on API or WebView. Clients decide which flow to use via the querystring `bankid_login_flow` in the auth step.
+Valid values are `api` and `webview`. Defaults to `webview`.
+
+### API flow
+
+1. Initiate authentication using `<KEYCLOAK_URL>/realms/<REALM>/protocol/openid-connect/auth`.
+2. Start polling the `pollingUrl` and wait for the BankID identification to complete.
+3. [Launch](https://www.bankid.com/en/utvecklare/guider/teknisk-integrationsguide/programstart) the BankID application using the autostarttoken.
+4. When identification is done, the collect endpoint will return status `complete`.
+5. Open completion url to finalize the authentication, follow the redirect and grab the code.
+6. Exchange the code for a token at `<KEYCLOAK_URL>/realms/<REALM>/protocol/openid-connect/token`
+
+**Auth start:**
+(Internally redirected from Keycloak auth endpoint when using API login flow)
+```
+GET /api/start
+{
+    "pollingUrl": "<POLLING_URL>", // /api/collect
+    "cancelUrl": "<CANCEL_URL>", // /api/cancel
+    "autostarttoken": "<AUTOSTART_TOKEN>"
+}
+```
+
+**Collect:**
+```
+GET /api/collect
+{
+    "status": "<BANKID_STATUS>", // pending | complete | failed
+    "hintCode": "<BANKID_HINT_CODE", // Only present for failed orders, defaults to null
+    "messageShortName": "<BANKID_MESSAGE_SHORT_NAME>", // Only present for failed orders, defaults to null
+    "completionUrl": "<COMPLETION_URL>" // /api/done
+}
+```
+
+**Done:**
+```
+GET /api/done
+Redirects back to client application with authorization code
+```
+
+**Cancel:**
+```
+GET /api/cancel
+{
+    "status": "cancelled",
+    "hintCode": "<BANKID_HINT_CODE>",
+    "messageShortName": "<BANKID_MESSAGE_SHORT_NAME>"
+}
+```
