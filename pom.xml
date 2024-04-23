@@ -109,6 +109,28 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<filters>
+					  <filter>
+						<artifact>com.google.zxing:core</artifact>
+						<excludes>
+						  <exclude>META-INF/MANIFEST.MF</exclude>
+						</excludes>
+					  </filter>
+					  <filter>
+						<artifact>com.google.zxing:javase</artifact>
+						<excludes>
+						  <exclude>META-INF/MANIFEST.MF</exclude>
+						</excludes>
+					  </filter>
+					  <filter>
+						<artifact>com.github.jai-imageio:jai-imageio-core</artifact>
+						<excludes>
+						  <exclude>META-INF/MANIFEST.MF</exclude>
+						</excludes>
+					  </filter>
+					</filters>
+				  </configuration>
 			</plugin>
 			<plugin>
 				<groupId>external.atlassian.jgitflow</groupId>
