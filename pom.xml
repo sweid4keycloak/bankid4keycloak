@@ -5,14 +5,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>sweid4keycloak</groupId>
 	<artifactId>bankid4keycloak</artifactId>
-	<version>20.1.0-SNAPSHOT</version>
+	<version>24.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>11</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<keycloak.version>20.0.5</keycloak.version>
+		<keycloak.version>24.0.3</keycloak.version>
 		<google.zxing.version>3.4.0</google.zxing.version>
 	</properties>
 	<licenses>
