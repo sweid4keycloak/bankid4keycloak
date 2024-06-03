@@ -3,6 +3,7 @@ package org.keycloak.broker.bankid;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -17,15 +18,15 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.ResponseBuilder;
 import jakarta.ws.rs.core.Response.Status;
 import jakarta.ws.rs.core.CacheControl;
 
+import lombok.Getter;
+import lombok.extern.jbosslog.JBossLog;
 import org.infinispan.Cache;
-import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.client.BankidClientException;
 import org.keycloak.broker.bankid.client.SimpleBankidClient;
 import org.keycloak.broker.bankid.model.AuthResponse;
@@ -37,7 +38,6 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.KeycloakSession;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import com.google.zxing.BarcodeFormat;
@@ -45,21 +45,21 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+@JBossLog
+@Getter
 public class BankidEndpoint {
-
-	private BankidIdentityProviderConfig config;
-	private AuthenticationCallback callback;
-	private BankidIdentityProvider provider;
-	private SimpleBankidClient bankidClient;
-	private static final Logger logger = Logger.getLogger(BankidEndpoint.class);
+	private final BankidIdentityProviderConfig config;
+	private final AuthenticationCallback callback;
+	private final BankidIdentityProvider provider;
+	private final SimpleBankidClient bankidClient;
 
 	// The maximum number of minutes to store bankid session info in the token cache
 	// Setting this to 5 since BankID will timeout after 3 minutes
-	private static long MAX_CACHE_LIFESPAN = 5;
+	private final static long MAX_CACHE_LIFESPAN = 5;
 
-	private Cache<Object, Object> actionTokenCache;
+	private final Cache<Object, Object> actionTokenCache;
 
-	private static String qrCodePrefix = "bankid.";
+	private static final String qrCodePrefix = "bankid.";
 
 	public BankidEndpoint(BankidIdentityProvider provider, BankidIdentityProviderConfig config,
 			AuthenticationCallback callback) {
@@ -77,7 +77,7 @@ public class BankidEndpoint {
 	public Response start(@QueryParam("state") String state) {
 
 		if (state == null) {
-			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
+			return callback.error("bankid.hints." + BankidHintCodes.internal.getMessageShortName());
 		}
 
 		if (config.isRequiredNin()) {
@@ -119,7 +119,7 @@ public class BankidEndpoint {
 					.setAttribute("showqr", config.isShowQRCode()).setAttribute("ninRequired", config.isRequiredNin())
 					.createForm("login-bankid.ftl");
 		} catch (BankidClientException e) {
-			return loginFormsProvider.setError("bankid.hints." + e.getHintCode().messageShortName)
+			return loginFormsProvider.setError("bankid.hints." + e.getHintCode().getMessageShortName())
 					.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -171,7 +171,7 @@ public class BankidEndpoint {
 
 		if (!this.actionTokenCache.containsKey(bankidRef + "-completion") ||
 				!(this.actionTokenCache.get(bankidRef + "-completion") instanceof CompletionData)) {
-			logger.error("Action token cache does not have a CompletionData object.");
+			log.error("Action token cache does not have a CompletionData object.");
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
 		}
 
@@ -236,7 +236,7 @@ public class BankidEndpoint {
 			String orderRef = authResponse.getOrderRef();
 			bankidClient.sendCancel(orderRef);
 		}
-		return loginFormsProvider.setError("bankid.hints." + BankidHintCodes.cancelled.messageShortName)
+		return loginFormsProvider.setError("bankid.hints." + BankidHintCodes.cancelled.getMessageShortName())
 				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 	}
 
@@ -252,7 +252,7 @@ public class BankidEndpoint {
 			hint = BankidHintCodes.unkown;
 		}
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-		return loginFormsProvider.setError("bankid.hints." + hint.messageShortName)
+		return loginFormsProvider.setError("bankid.hints." + hint.getMessageShortName())
 				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 	}
 
@@ -274,7 +274,7 @@ public class BankidEndpoint {
 			try {
 				qrAuthCode = generateQrAuthCode(authResponse.getQrStartSecret(), Long.toString(elapsedTime));
 			} catch (Exception e) {
-				logger.error("Failed to generate qrAuthCode");
+				log.error("Failed to generate qrAuthCode");
 				throw new RuntimeException(e);
 			}
 
@@ -308,15 +308,11 @@ public class BankidEndpoint {
 		return Response.serverError().build();
 	}
 
-	public BankidIdentityProviderConfig getConfig() {
-		return config;
-	}
-
 	private String generateQrAuthCode(String qrStartSecret, String time)
 			throws InvalidKeyException, NoSuchAlgorithmException, UnsupportedEncodingException {
 		Mac mac = Mac.getInstance("HmacSHA256");
-		mac.init(new SecretKeySpec(qrStartSecret.getBytes("ascii"), "HmacSHA256"));
+		mac.init(new SecretKeySpec(qrStartSecret.getBytes(StandardCharsets.US_ASCII), "HmacSHA256"));
 
-		return String.format("%064x", new BigInteger(1, mac.doFinal(new String(time).getBytes())));
+		return String.format("%064x", new BigInteger(1, mac.doFinal(time.getBytes())));
 	}
 }

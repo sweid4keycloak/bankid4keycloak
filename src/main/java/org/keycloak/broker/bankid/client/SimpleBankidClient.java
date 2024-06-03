@@ -4,8 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.jbosslog.JBossLog;
 import org.apache.http.client.HttpClient;
-import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.model.AuthRequest;
 import org.keycloak.broker.bankid.model.AuthResponse;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
@@ -13,25 +14,19 @@ import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.bankid.model.Requirements;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.provider.util.SimpleHttp.Response;
-import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+@JBossLog
+@RequiredArgsConstructor
 public class SimpleBankidClient {
-
-	private static final Logger logger = Logger.getLogger(SimpleBankidClient.class);
-
-	private HttpClient bankidHttpClient;
-	private String baseUrl;
-
-	public SimpleBankidClient(HttpClient bankidHttpClient, String baseUrl) {
-		this.bankidHttpClient = bankidHttpClient;
-		this.baseUrl = baseUrl;
-	}
+	private final HttpClient bankidHttpClient;
+	private final String baseUrl;
 
 	public AuthResponse sendAuth(String personalNumber, String endUserIp) {
 
-		AuthRequest request = new AuthRequest(endUserIp);
+		AuthRequest request = new AuthRequest();
+		request.setEndUserIp(endUserIp);
 		
 		if (personalNumber != null) {
 			Requirements requirements = new Requirements();
@@ -46,7 +41,7 @@ public class SimpleBankidClient {
 			ar.setAuthTimestamp(System.currentTimeMillis() / 1000);
 			return ar;
 		} catch (IOException e) {
-			logger.error("Failed to parse BankID response", e);
+			log.error("Failed to parse BankID response", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);
 		}
 	}
@@ -60,7 +55,7 @@ public class SimpleBankidClient {
 			// TODO: Handle when status is failed
 			return responseData;
 		} catch (IOException e) {
-			logger.error("Failed to parse BankID response", e);
+			log.error("Failed to parse BankID response", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);
 		}
 	}
@@ -72,7 +67,7 @@ public class SimpleBankidClient {
 			sendRequest("/rp/v6.0/cancel", requestData);
 			return;
 		} catch (Exception e) {
-			logger.warn("Failed cancel BankID auth request " + orderrRef, e);
+			log.warn("Failed cancel BankID auth request " + orderrRef, e);
 		}
 	}
 
@@ -94,14 +89,14 @@ public class SimpleBankidClient {
 					return handleOtherHttpErrors(path, response);
 			}
 		} catch (IOException e) {
-			logger.error("Failed to send request to BankID", e);
+			log.error("Failed to send request to BankID", e);
 			throw new BankidClientException(BankidHintCodes.internal, e);
 		}
 	}
 
 	private Response handleOtherHttpErrors(String path, Response response) {
 		try {
-			logger.errorf("Request to %s failed with status code %d and payload %s",
+			log.errorf("Request to %s failed with status code %d and payload %s",
 					path,
 					response.getStatus(),
 					response.asString());
@@ -112,7 +107,7 @@ public class SimpleBankidClient {
 
 	private Response handle503Response(String path, Response response) {
 		try {
-			logger.errorf("Request to %s failed with status code %d and payload %s",
+			log.errorf("Request to %s failed with status code %d and payload %s",
 					path,
 					response.getStatus(),
 					response.asString());
@@ -124,7 +119,7 @@ public class SimpleBankidClient {
 	private Response handle400Response(String path, Response response) {
 		try {
 			JsonNode responseJson = response.asJson();
-			logger.errorf("Request to %s failed with status code %d and payload %s",
+			log.errorf("Request to %s failed with status code %d and payload %s",
 					path,
 					response.getStatus(),
 					responseJson.toString());
