@@ -14,6 +14,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<keycloak.version>24.0.3</keycloak.version>
 		<google.zxing.version>3.4.0</google.zxing.version>
+		<lombok.version>1.18.32</lombok.version>
 	</properties>
 	<licenses>
 		<license>
@@ -75,6 +76,13 @@
 					<artifactId>jcommander</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 	<build>

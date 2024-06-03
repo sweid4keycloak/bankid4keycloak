@@ -1,5 +1,10 @@
 package org.keycloak.broker.bankid.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum BankidHintCodes {
 	// Pending
 	outstandingTransaction("RFA1"),
@@ -26,9 +31,5 @@ public enum BankidHintCodes {
 	// Internal error (by the BankID IDP Provider)
 	internal("RFA22");
 
-	public final String messageShortName;
-
-	private BankidHintCodes(String messageShortName) {
-		this.messageShortName = messageShortName;
-	}
+	private final String messageShortName;
 }
