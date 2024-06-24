@@ -66,7 +66,7 @@ public class BankidEndpoint {
 		this.config = config;
 		this.callback = callback;
 		this.provider = provider;
-		this.bankidClient = new SimpleBankidClient(provider.buildBankidHttpClient(), config.getApiUrl());
+		this.bankidClient = new SimpleBankidClient(provider.getSession(), config.getApiUrl());
 		InfinispanConnectionProvider infinispanConnectionProvider = provider.getSession()
 				.getProvider(InfinispanConnectionProvider.class);
 		this.actionTokenCache = infinispanConnectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
@@ -182,9 +182,9 @@ public class BankidEndpoint {
 			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
 			provider.getSession().getContext().setAuthenticationSession(authSession);
 			BrokeredIdentityContext identity = new BrokeredIdentityContext(
-					getConfig().getAlias().concat("." + getUsername(user)));
+					getConfig().getAlias().concat("." + getUsername(user)),
+					config);
 
-			identity.setIdpConfig(config);
 			identity.setIdp(provider);
 			identity.setUsername(getUsername(user));
 			identity.setFirstName(user.getGivenName());

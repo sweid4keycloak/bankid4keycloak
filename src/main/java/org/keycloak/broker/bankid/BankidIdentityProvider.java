@@ -59,17 +59,4 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 
 		return ProxyMappings.withFixedProxyMapping(httpsProxy, noProxy);
 	}
-
-	public HttpClient buildBankidHttpClient() {
-
-		try {
-			return (new HttpClientBuilder()).keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
-					.trustStore(getConfig().getTrustStore())
-					.proxyMappings(generateProxyMapping())
-					.build();
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to create BankID HTTP Client", e);
-		}
-	}
-
 }

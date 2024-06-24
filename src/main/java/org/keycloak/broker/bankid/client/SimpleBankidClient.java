@@ -14,6 +14,7 @@ import org.keycloak.broker.bankid.model.Requirements;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.broker.provider.util.SimpleHttp.Response;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
+import org.keycloak.models.KeycloakSession;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -21,11 +22,11 @@ public class SimpleBankidClient {
 
 	private static final Logger logger = Logger.getLogger(SimpleBankidClient.class);
 
-	private HttpClient bankidHttpClient;
+	private KeycloakSession session;
 	private String baseUrl;
 
-	public SimpleBankidClient(HttpClient bankidHttpClient, String baseUrl) {
-		this.bankidHttpClient = bankidHttpClient;
+	public SimpleBankidClient(KeycloakSession session, String baseUrl) {
+		this.session = session;
 		this.baseUrl = baseUrl;
 	}
 
@@ -80,7 +81,7 @@ public class SimpleBankidClient {
 		try {
 			Response response = SimpleHttp.doPost(
 					this.baseUrl + path,
-					this.bankidHttpClient)
+					this.session)
 					.json(entity)
 					.asResponse();
 			switch (response.getStatus()) {
