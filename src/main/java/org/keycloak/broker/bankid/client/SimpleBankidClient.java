@@ -5,10 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.jboss.logging.Logger;
@@ -17,7 +15,6 @@ import org.keycloak.broker.bankid.model.AuthResponse;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.bankid.model.Requirements;
-import org.keycloak.models.AuthenticationExecutionModel.Requirement;
 import org.keycloak.util.JsonSerialization;
 
 import com.fasterxml.jackson.databind.JsonNode;
