@@ -4,23 +4,31 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.bankid.model.AuthRequest;
 import org.keycloak.broker.bankid.model.AuthResponse;
 import org.keycloak.broker.bankid.model.BankidHintCodes;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.bankid.model.Requirements;
-import org.keycloak.broker.provider.util.SimpleHttp;
-import org.keycloak.broker.provider.util.SimpleHttp.Response;
 import org.keycloak.models.AuthenticationExecutionModel.Requirement;
+import org.keycloak.util.JsonSerialization;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class SimpleBankidClient {
 
 	private static final Logger logger = Logger.getLogger(SimpleBankidClient.class);
-
+	
+	// Responses from BankID will never be more than 1MB
+	private static final long MAX_CONSUMED_RESPONSE_SIZE = 1000000;
+	
 	private HttpClient bankidHttpClient;
 	private String baseUrl;
 
@@ -78,11 +86,13 @@ public class SimpleBankidClient {
 
 	private Response sendRequest(String path, Object entity) {
 		try {
-			Response response = SimpleHttp.doPost(
-					this.baseUrl + path,
-					this.bankidHttpClient)
-					.json(entity)
-					.asResponse();
+			HttpPost request = new HttpPost(this.baseUrl + path);
+			request.setEntity(new StringEntity(JsonSerialization.writeValueAsString(entity),ContentType.APPLICATION_JSON));
+			request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+			request.setHeader(HttpHeaders.ACCEPT, "application/json");
+
+			Response response = new Response(this.bankidHttpClient.execute(request), MAX_CONSUMED_RESPONSE_SIZE);
+
 			switch (response.getStatus()) {
 				case 200:
 					return response;

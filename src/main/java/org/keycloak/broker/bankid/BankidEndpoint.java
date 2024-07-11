@@ -182,9 +182,8 @@ public class BankidEndpoint {
 			AuthenticationSessionModel authSession = this.callback.getAndVerifyAuthenticationSession(state);
 			provider.getSession().getContext().setAuthenticationSession(authSession);
 			BrokeredIdentityContext identity = new BrokeredIdentityContext(
-					getConfig().getAlias().concat("." + getUsername(user)));
+					getConfig().getAlias().concat("." + getUsername(user)), getConfig());
 
-			identity.setIdpConfig(config);
 			identity.setIdp(provider);
 			identity.setUsername(getUsername(user));
 			identity.setFirstName(user.getGivenName());
