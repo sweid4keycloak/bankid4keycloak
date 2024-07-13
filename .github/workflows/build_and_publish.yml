@@ -18,7 +18,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: target/
-        key: maven-target-${{ env.GITHUB_RUN_ID }}
+        key: maven-target-${{ github.run_id }}-${{ github.run_number }}
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -37,7 +37,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: target/
-        key: maven-target-${{ env.GITHUB_RUN_ID }}
+        key: maven-target-${{ github.run_id }}-${{ github.run_number }}
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -58,7 +58,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: target/
-        key: maven-target-${{ env.GITHUB_RUN_ID }}
+        key: maven-target-${{ github.run_id }}-${{ github.run_number }}
     - uses: docker/metadata-action@v3
       id: metadata
       with:
