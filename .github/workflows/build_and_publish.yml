@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
+
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
