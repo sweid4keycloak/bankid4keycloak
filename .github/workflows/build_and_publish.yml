@@ -17,8 +17,8 @@ jobs:
       id: cache-target
       uses: actions/cache@v4
       with:
-        path: target
-        key: maven-target-${{ github.run.id }}
+        path: target/
+        key: maven-target-${{ env.GITHUB_RUN_ID }}
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -37,7 +37,13 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: target/
-        key: maven-target-${{ github.run.id }}
+        key: maven-target-${{ env.GITHUB_RUN_ID }}
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy
       env:
@@ -52,7 +58,7 @@ jobs:
       uses: actions/cache/restore@v4
       with:
         path: target/
-        key: maven-target-${{ github.run.id }}
+        key: maven-target-${{ env.GITHUB_RUN_ID }}
     - uses: docker/metadata-action@v3
       id: metadata
       with:
