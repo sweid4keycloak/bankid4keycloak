@@ -1,9 +1,19 @@
 package org.keycloak.broker.bankid.model;
 
+import org.infinispan.protostream.annotations.ProtoField;
+
 public class BankidUser {
+
+	@ProtoField(number = 1)
 	String personalNumber;
+
+	@ProtoField(number = 2)
 	String name;
+
+	@ProtoField(number = 3)
 	String givenName;
+
+	@ProtoField(number = 4)
 	String surname;
 
 	public String getPersonalNumber() {
