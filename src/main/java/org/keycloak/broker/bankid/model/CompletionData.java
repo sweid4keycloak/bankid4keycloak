@@ -1,11 +1,25 @@
 package org.keycloak.broker.bankid.model;
 
+import org.infinispan.protostream.annotations.ProtoField;
+
 public class CompletionData {
+
+	@ProtoField(number = 1)
 	BankidUser user;
+
+	@ProtoField(number = 2)
 	BankidDevice device;
+
+	@ProtoField(number = 3)
 	String bankIdIssueDate;
+
+	@ProtoField(number = 4)
 	StepUp stepUp;
+
+	@ProtoField(number = 5)
 	String signature;
+
+	@ProtoField(number = 6)
 	String ocspResponse;
 
 	public BankidUser getUser() {
