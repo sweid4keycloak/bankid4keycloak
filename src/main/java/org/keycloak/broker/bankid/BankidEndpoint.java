@@ -36,6 +36,7 @@ import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import com.google.zxing.BarcodeFormat;
@@ -75,7 +76,7 @@ public class BankidEndpoint {
 	public Response start(@QueryParam("state") String state) {
 
 		if (state == null) {
-			return callback.error("bankid.hints." + BankidHintCodes.internal.messageShortName);
+			return callback.error(config, "bankid.hints." + BankidHintCodes.internal.messageShortName);
 		}
 
 		if (config.isRequiredNin()) {
