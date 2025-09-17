@@ -12,7 +12,7 @@
 		<java.version>21</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<keycloak.version>26.3.0</keycloak.version>
+		<keycloak.version>26.3.3</keycloak.version>
 		<google.zxing.version>3.5.3</google.zxing.version>
 		<protostream.version>15.0.13.Final</protostream.version>
 	</properties>
