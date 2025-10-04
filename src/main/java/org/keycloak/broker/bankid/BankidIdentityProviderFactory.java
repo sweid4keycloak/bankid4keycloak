@@ -1,8 +1,14 @@
 package org.keycloak.broker.bankid;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.http.client.HttpClient;
+import org.keycloak.broker.bankid.client.SimpleBankidClient;
 import org.keycloak.broker.provider.AbstractIdentityProviderFactory;
+import org.keycloak.connections.httpclient.HttpClientBuilder;
+import org.keycloak.connections.httpclient.ProxyMappings;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderConfigProperty;
@@ -11,6 +17,7 @@ import org.keycloak.provider.ProviderConfigurationBuilder;
 public class BankidIdentityProviderFactory extends AbstractIdentityProviderFactory	<BankidIdentityProvider> {
 
 	public static final String PROVIDER_ID = "bankid";
+	private static final Map<String, SimpleBankidClient> CLIENTS = new ConcurrentHashMap<>();
 	
 	@Override
 	public String getName() {
@@ -19,7 +26,10 @@ public class BankidIdentityProviderFactory extends AbstractIdentityProviderFacto
 
 	@Override
 	public BankidIdentityProvider create(KeycloakSession session, IdentityProviderModel model) {
-		return new BankidIdentityProvider(session, new BankidIdentityProviderConfig(model));
+		BankidIdentityProviderConfig config = new BankidIdentityProviderConfig(model);
+		SimpleBankidClient client = CLIENTS.computeIfAbsent(clientKey(config),
+				key -> new SimpleBankidClient(buildBankidHttpClient(config), config.getApiUrl()));
+		return new BankidIdentityProvider(session, config, client);
 	}
 
 	@Override
@@ -66,6 +76,37 @@ public class BankidIdentityProviderFactory extends AbstractIdentityProviderFacto
                 .type(ProviderConfigProperty.BOOLEAN_TYPE).add()
 				
 				.build();
-    }
+	}
+
+	private String clientKey(BankidIdentityProviderConfig config) {
+		String alias = config.getAlias() != null ? config.getAlias() : "";
+		String apiUrl = config.getApiUrl() != null ? config.getApiUrl() : "";
+		return alias + "@" + apiUrl;
+	}
+
+	private HttpClient buildBankidHttpClient(BankidIdentityProviderConfig config) {
+		try {
+			return (new HttpClientBuilder()).keyStore(config.getKeyStore(), config.getPrivateKeyPassword())
+					.trustStore(config.getTrustStore())
+					.proxyMappings(generateProxyMapping())
+					.build();
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to create BankID HTTP Client", e);
+		}
+	}
+
+	private ProxyMappings generateProxyMapping() {
+		String httpsProxy = System.getenv("HTTPS_PROXY");
+		if (httpsProxy == null) {
+			httpsProxy = System.getenv("https_proxy");
+		}
+
+		String noProxy = System.getenv("NO_PROXY");
+		if (noProxy == null) {
+			noProxy = System.getenv("no_proxy");
+		}
+
+		return ProxyMappings.withFixedProxyMapping(httpsProxy, noProxy);
+	}
 
 }

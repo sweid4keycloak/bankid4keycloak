@@ -65,7 +65,7 @@ public class BankidEndpoint {
 		this.config = config;
 		this.callback = callback;
 		this.provider = provider;
-		this.bankidClient = new SimpleBankidClient(provider.buildBankidHttpClient(), config.getApiUrl());
+		this.bankidClient = provider.getBankidClient();
 		InfinispanConnectionProvider infinispanConnectionProvider = provider.getSession()
 				.getProvider(InfinispanConnectionProvider.class);
 		this.actionTokenCache = infinispanConnectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
