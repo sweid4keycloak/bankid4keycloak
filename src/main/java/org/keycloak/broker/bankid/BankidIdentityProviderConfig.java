@@ -20,6 +20,8 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 	public static final String BANKID_REQUIRE_NIN = "bankid_require_nin";
 	public static final String BANKID_SHOW_QR_CODE = "bankid_show_qr_code";
 	public static final String BANKID_SAVE_NIN_HASH = "bankid_save_nin_hash";
+	public static final String BANKID_CONNECTION_POOL_SIZE = "bankid_connection_pool_size";
+	public static final String BANKID_MAX_POOLED_PER_ROUTE = "bankid_max_pooled_per_route";
 
 	private KeyStore keyStore;
 	private KeyStore truststore;
@@ -77,5 +79,29 @@ public class BankidIdentityProviderConfig extends IdentityProviderModel {
 
 	public boolean isSaveNinHashed() {
 		return Boolean.valueOf(getConfig().getOrDefault(BANKID_SAVE_NIN_HASH, "false"));
+	}
+
+	public int getConnectionPoolSize() {
+		return parsePositiveInt(BANKID_CONNECTION_POOL_SIZE, 200);
+	}
+
+	public int getConnectionPoolPerRoute() {
+		int value = parsePositiveInt(BANKID_MAX_POOLED_PER_ROUTE, 50);
+		int total = getConnectionPoolSize();
+		return value > total ? total : value;
+	}
+
+	private int parsePositiveInt(String key, int defaultValue) {
+		String raw = getConfig().get(key);
+		if (raw == null || raw.trim().isEmpty()) {
+			return defaultValue;
+		}
+
+		try {
+			int parsed = Integer.parseInt(raw.trim());
+			return parsed > 0 ? parsed : defaultValue;
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
 	}
 }

@@ -72,10 +72,18 @@ public class BankidIdentityProviderFactory extends AbstractIdentityProviderFacto
                 .type(ProviderConfigProperty.BOOLEAN_TYPE).add()
 
 				.property().name(BankidIdentityProviderConfig.BANKID_SAVE_NIN_HASH).label("Use hashed Personal Number").helpText("Used hashed (SHA-256) Personal Number in keycloak instead of storing it in clear text.")
-                .defaultValue(false)
-                .type(ProviderConfigProperty.BOOLEAN_TYPE).add()
-				
-				.build();
+				.defaultValue(false)
+				.type(ProviderConfigProperty.BOOLEAN_TYPE).add()
+
+		.property().name(BankidIdentityProviderConfig.BANKID_CONNECTION_POOL_SIZE).label("Connection pool size").helpText("Total HTTP connections available for BankID calls.")
+		.defaultValue("200")
+		.type(ProviderConfigProperty.STRING_TYPE).add()
+
+		.property().name(BankidIdentityProviderConfig.BANKID_MAX_POOLED_PER_ROUTE).label("Connections per host").helpText("Maximum concurrent connections to a single BankID endpoint.")
+		.defaultValue("50")
+		.type(ProviderConfigProperty.STRING_TYPE).add()
+
+			.build();
 	}
 
 	private String clientKey(BankidIdentityProviderConfig config) {
@@ -89,6 +97,8 @@ public class BankidIdentityProviderFactory extends AbstractIdentityProviderFacto
 			return (new HttpClientBuilder()).keyStore(config.getKeyStore(), config.getPrivateKeyPassword())
 					.trustStore(config.getTrustStore())
 					.proxyMappings(generateProxyMapping())
+					.connectionPoolSize(config.getConnectionPoolSize())
+					.maxPooledPerRoute(config.getConnectionPoolPerRoute())
 					.build();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to create BankID HTTP Client", e);
