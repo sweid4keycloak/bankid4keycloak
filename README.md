@@ -95,3 +95,11 @@ Full path to the truststore file.
 Password for the PKCS12 container.  
 
 *example*: `qwerty123`
+
+### Connection pool size
+
+Upper bound for concurrent BankID calls. Leave default, only raise this if BankID calls are waiting on the pool.
+
+### Connections per host
+
+Maximum parallel connections to a single BankID endpoint. Keep this at or below the Connection pool size.

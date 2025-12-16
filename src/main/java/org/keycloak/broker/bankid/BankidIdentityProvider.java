@@ -6,12 +6,10 @@ import java.util.Map;
 
 import jakarta.ws.rs.core.Response;
 
-import org.apache.http.client.HttpClient;
+import org.keycloak.broker.bankid.client.SimpleBankidClient;
 import org.keycloak.broker.provider.AbstractIdentityProvider;
 import org.keycloak.broker.provider.AuthenticationRequest;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
-import org.keycloak.connections.httpclient.HttpClientBuilder;
-import org.keycloak.connections.httpclient.ProxyMappings;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.KeycloakSession;
@@ -20,8 +18,12 @@ import org.keycloak.models.UserModel;
 
 public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdentityProviderConfig> {
 
-	public BankidIdentityProvider(KeycloakSession session, BankidIdentityProviderConfig config) {
+	private final SimpleBankidClient bankidClient;
+
+	public BankidIdentityProvider(KeycloakSession session, BankidIdentityProviderConfig config,
+			SimpleBankidClient bankidClient) {
 		super(session, config);
+		this.bankidClient = bankidClient;
 	}
 
 	@Override
@@ -73,30 +75,8 @@ public class BankidIdentityProvider extends AbstractIdentityProvider<BankidIdent
 		}
 	}
 
-	public ProxyMappings generateProxyMapping() {
-		String httpsProxy = System.getenv("HTTPS_PROXY");
-		if (httpsProxy == null) {
-			httpsProxy = System.getenv("https_proxy");
-		}
-
-		String noProxy = System.getenv("NO_PROXY");
-		if (noProxy == null) {
-			noProxy = System.getenv("no_proxy");
-		}
-
-		return ProxyMappings.withFixedProxyMapping(httpsProxy, noProxy);
-	}
-
-	public HttpClient buildBankidHttpClient() {
-
-		try {
-			return (new HttpClientBuilder()).keyStore(getConfig().getKeyStore(), getConfig().getPrivateKeyPassword())
-					.trustStore(getConfig().getTrustStore())
-					.proxyMappings(generateProxyMapping())
-					.build();
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to create BankID HTTP Client", e);
-		}
+	public SimpleBankidClient getBankidClient() {
+		return bankidClient;
 	}
 
 }
