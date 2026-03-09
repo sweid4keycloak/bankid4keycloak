@@ -38,6 +38,8 @@ import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
+import org.keycloak.services.managers.AuthenticationSessionManager;
+import org.keycloak.sessions.RootAuthenticationSessionModel;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -71,24 +73,25 @@ public class BankidEndpoint {
 		this.actionTokenCache = infinispanConnectionProvider.getCache(InfinispanConnectionProvider.ACTION_TOKEN_CACHE);
 	}
 
-	@GET
-	@Path("/start")
-	public Response start(@QueryParam("state") String state) {
+@GET
+    @Path("/start")
+    public Response start(@QueryParam("state") String state) {
 
-		if (state == null) {
-			return callback.error(config, "bankid.hints." + BankidHintCodes.internal.messageShortName);
-		}
+        if (state == null) {
+            return callback.error(config, "bankid.hints." + BankidHintCodes.internal.messageShortName);
+        }
 
-		if (config.isRequiredNin()) {
-			LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-			return loginFormsProvider
-					.setAttribute("state", state)
-					.createForm("start-bankid.ftl");
-		} else {
-			// Go direct to login if we do not require non.
-			return doLogin(null, state);
-		}
-	}
+        if (config.isRequiredNin()) {
+            LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
+            applyClientSessionContext(loginFormsProvider, state);
+            return loginFormsProvider
+                    .setAttribute("state", state)
+                    .createForm("start-bankid.ftl");
+        } else {
+						// Go direct to login if we do not require non.
+            return doLogin(null, state);
+        }
+    }
 
 	@POST
 	@Path("/login")
@@ -104,7 +107,8 @@ public class BankidEndpoint {
 
 	private Response doLogin(String nin, String state) {
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-
+		applyClientSessionContext(loginFormsProvider, state);
+		
 		try {
 			AuthResponse authResponse;
 			authResponse = bankidClient.sendAuth(nin, provider.getSession().getContext().getConnection().getRemoteAddr());
@@ -216,9 +220,10 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/cancel")
-	public Response cancel(@QueryParam("bankidref") String bankidRef) {
+	public Response cancel(@QueryParam("bankidref") String bankidRef, @QueryParam("state") String state) {		
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
-
+		applyClientSessionContext(loginFormsProvider, state);
+	
 		if (!this.actionTokenCache.containsKey(bankidRef) ||
 				!(this.actionTokenCache.get(bankidRef) instanceof AuthResponse)) {
 			return loginFormsProvider.setError("bankid.error.internal").createErrorPage(Status.INTERNAL_SERVER_ERROR);
@@ -240,8 +245,8 @@ public class BankidEndpoint {
 
 	@GET
 	@Path("/error")
-	public Response error(@QueryParam("code") String hintCode) {
-
+	public Response error(@QueryParam("code") String hintCode, @QueryParam("state") String state) {
+	
 		BankidHintCodes hint;
 		// Sanitize input from the web
 		try {
@@ -250,6 +255,7 @@ public class BankidEndpoint {
 			hint = BankidHintCodes.unkown;
 		}
 		LoginFormsProvider loginFormsProvider = provider.getSession().getProvider(LoginFormsProvider.class);
+		applyClientSessionContext(loginFormsProvider, state);
 		return loginFormsProvider.setError("bankid.hints." + hint.messageShortName)
 				.createErrorPage(Status.INTERNAL_SERVER_ERROR);
 	}
@@ -317,4 +323,35 @@ public class BankidEndpoint {
 
 		return String.format("%064x", new BigInteger(1, mac.doFinal(new String(time).getBytes())));
 	}
+	
+	/**
+     * Passively resolves the client session context from the 'state' parameter.
+     * This allows the correct client theme to be rendered without consuming
+     * the cryptographic nonce, avoiding 500 errors in the broker flow.
+     */
+    private void applyClientSessionContext(LoginFormsProvider loginFormsProvider, String state) {
+        if (state == null || !state.contains(".")) return;
+        
+        try {
+            String[] parts = state.split("\\.");
+            if (parts.length >= 2) {
+                String tabId = parts[1];
+                
+                AuthenticationSessionManager asm = new AuthenticationSessionManager(provider.getSession());
+                RootAuthenticationSessionModel rootSession = asm.getCurrentRootAuthenticationSession(provider.getSession().getContext().getRealm());
+                
+                if (rootSession != null && tabId != null) {
+                    for (AuthenticationSessionModel session : rootSession.getAuthenticationSessions().values()) {
+                        if (tabId.equals(session.getTabId())) {
+                            loginFormsProvider.setAuthenticationSession(session);
+                            provider.getSession().getContext().setClient(session.getClient());
+                            return;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Could not apply client session context for theme", e);
+        }
+    }
 }
