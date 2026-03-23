@@ -12,16 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import jakarta.ws.rs.FormParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.ResponseBuilder;
-import jakarta.ws.rs.core.Response.Status;
-import jakarta.ws.rs.core.CacheControl;
 
 import org.infinispan.Cache;
 import org.jboss.logging.Logger;
@@ -33,16 +23,26 @@ import org.keycloak.broker.bankid.model.BankidUser;
 import org.keycloak.broker.bankid.model.CollectResponse;
 import org.keycloak.broker.bankid.model.CompletionData;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
-import org.keycloak.broker.provider.IdentityProvider.AuthenticationCallback;
+import org.keycloak.broker.provider.UserAuthenticationIdentityProvider.AuthenticationCallback;
 import org.keycloak.connections.infinispan.InfinispanConnectionProvider;
 import org.keycloak.forms.login.LoginFormsProvider;
-import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
 
 public class BankidEndpoint {
 
