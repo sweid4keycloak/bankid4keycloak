@@ -335,7 +335,7 @@ public class BankidEndpoint {
 			return;
 
 		try {
-			String[] parts = state.split("\\.");
+			String[] parts = state.split("\\.", 3);
 			if (parts.length >= 2) {
 				String tabId = parts[1];
 
