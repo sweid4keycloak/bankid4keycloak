@@ -43,6 +43,7 @@
 			</div>
 			<form novalidate="" action="cancel">
 			<input id="bankidref" name="bankidref" autocorrect="off" autocomplete="off" type="hidden" value="${bankidref}" />
+			<input id="state" name="state" type="hidden" value="${state}" />
 			<button
 				style="padding: 0px; margin: 0px; background-color: rgba(255, 255, 255, 0); border: medium none; cursor: pointer; outline: currentcolor none medium;">
 				<div
