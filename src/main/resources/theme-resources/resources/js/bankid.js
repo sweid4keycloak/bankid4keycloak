@@ -26,12 +26,12 @@ function redirectToDone(bankidref, state) {
 
 function redirectToError(errorCode) {
     const stateVal = document.getElementById('state') ? document.getElementById('state').value : '';
-    window.location.href = "error?code=" + errorCode + "&state=" + stateVal;
+    window.location.href = "error?code=" + encodeURIComponent(errorCode) + "&state=" + encodeURIComponent(stateVal);
 }
 
 function redirectToCancel(errorCode, bankidref) {
     const stateVal = document.getElementById('state') ? document.getElementById('state').value : '';
-    window.location.href = "cancel?bankidref=" + bankidref + "&state=" + stateVal;
+    window.location.href = "cancel?bankidref=" + encodeURIComponent(bankidref) + "&state=" + encodeURIComponent(stateVal);
 }
 
 /* For login form */
